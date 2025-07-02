@@ -1,0 +1,643 @@
+import json
+import boto3
+import os
+import re
+import traceback
+import logging
+from langchain.embeddings import BedrockEmbeddings
+from langchain.vectorstores.pgvector import PGVector
+from langchain.docstore.document import Document
+from langchain_community.chat_models import BedrockChat
+from langchain.chains import RetrievalQA
+from langchain.prompts import PromptTemplate
+from langchain_aws import ChatBedrockConverse
+import psycopg2
+import time as t
+import uuid
+from error_helper import sqs_helper
+import tiktoken
+from datetime import datetime
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+# Constants
+env = os.getenv('ENV')
+DB_HOST = os.getenv('DB_HOST')
+DB_USER = os.getenv('DB_USER')
+DB_PASSWORD = os.getenv('DB_PASSWORD')
+DB_PORT = os.getenv('DB_PORT')
+MODEL_ID = os.getenv('MODEL_ID')
+MODEL_ID_HQ = os.getenv('MODEL_ID_HQ')
+REGION = os.getenv('AWS_REGION')
+
+def calculate_tokens(text):
+    try:
+        encoder = tiktoken.get_encoding("gpt2")
+        token_count = len(encoder.encode(str(text)))
+        return token_count
+    except Exception as e:
+        logger.info(f"error while calculating tokens {e}")
+        return None
+
+def transform_event(event):  # Read event from event-bridge
+    try:
+        event_params = event['Records'][0]["body"]
+        event_params = json.loads(event_params)
+        return event_params
+    except Exception as e:
+        raise e
+
+
+def cred(db_name):
+    """Generates a PostgreSQL connection string."""
+    try:
+        connection_str = PGVector.connection_string_from_db_params(
+            driver='psycopg2',
+            user=DB_USER,
+            password=DB_PASSWORD,
+            host=DB_HOST,
+            port=DB_PORT,
+            database=db_name,
+        )
+        logger.info(f"Connection string generated: {connection_str}")
+        return connection_str
+    except Exception as e:
+        logger.info(f"Error generating connection string: {str(e)}")
+        raise e
+
+
+def check_collection_exists(database, collection_name: str) -> bool:
+    # Establish connection to the PostgreSQL database
+    connection = psycopg2.connect(
+        host=DB_HOST,
+        database=database,  # Connect to the specified database
+        user=DB_USER,
+        password=DB_PASSWORD,
+        port=DB_PORT,
+    )
+    try:
+        with connection:
+            with connection.cursor() as cursor:
+                # Example query to check collection existence
+                query = """
+                SELECT EXISTS(
+                    SELECT 1
+                    FROM langchain_pg_collection
+                    WHERE name = %s
+                );
+                """
+                cursor.execute(query, (collection_name,))
+                exists = cursor.fetchone()[0]
+        return exists
+    except Exception as e:
+        logger.info(f"Error checking collection existence: {e}")
+        return False
+
+
+def create_or_get_db_inst(database, collection_name, schema_data, use_existing=True):
+    # Initialize the text embedding model
+    embeddings = BedrockEmbeddings()
+    CONNECTION_STRING = cred(database)
+
+    if use_existing:
+        # Check if the collection exists
+        if check_collection_exists(database, collection_name):
+            # Get an existing PGVector instance
+            vector_store = PGVector.from_existing_index(
+                embedding=embeddings,
+                collection_name=collection_name,
+                connection_string=CONNECTION_STRING
+            )
+        else:
+            # Collection does not exist; create a new vector store
+            vector_store = PGVector.from_documents(
+                documents=schema_data,
+                embedding=embeddings,
+                collection_name=collection_name,
+                connection_string=CONNECTION_STRING
+            )
+    else:
+        # Create a new PGVector instance and populate it with document data and embeddings
+        vector_store = PGVector.from_documents(
+            documents=schema_data,
+            embedding=embeddings,
+            collection_name=collection_name,
+            connection_string=CONNECTION_STRING
+        )
+
+    return vector_store
+
+def calculate_prompt_token(embedings, question, job_id, matched_query, imp_data, lmtn_prompt, prompt_file='prompt.txt'):
+    try:
+        with open(prompt_file, 'r') as file:
+            prompt = file.read()
+
+        # Replace common placeholders
+        prompt = prompt.replace("$$ID$$", 'job_id').replace("$$VALUE$$", str(job_id)).replace("$$Limitation$$", str(lmtn_prompt))
+        prompt = prompt.replace("{context}", embedings).replace("{question}", question)
+
+        # Replace matched_query if available
+        if matched_query:
+            prompt = prompt.replace("$$common_query$$", str(matched_query))
+        else:
+            prompt = prompt.replace("$$common_query$$", "")
+
+        # Replace imp_data if available
+        if imp_data:
+            imp_data_str = ", ".join(map(str, imp_data)) if isinstance(imp_data, list) else str(imp_data)
+            prompt = prompt.replace("$$file_imp_data$$", imp_data_str)
+        else:
+            prompt = prompt.replace("$$file_imp_data$$", "")
+
+        input_token = calculate_tokens(prompt)
+        return input_token
+    except Exception as e:
+        logger.info(f"error while calculating prompt token {e}")
+        return None  # Return None to indicate failure
+
+
+def get_db_inst(database, collection_name, use_existing=True):
+    # Initialize the text embedding model
+    embeddings = BedrockEmbeddings()
+    CONNECTION_STRING = cred(database)
+    try:
+        if use_existing:
+            # Check if the collection exists
+            vector = PGVector.from_existing_index(
+                embedding=embeddings,
+                collection_name=collection_name,
+                connection_string=CONNECTION_STRING
+            )
+            logger.info(f"Collection exist:- {collection_name}")
+            return vector
+    except Exception as e:
+        logger.info(f"Collection does not exist:- {collection_name}")
+
+
+def create_chain(db_instance, question, job_id, matched_query, imp_data, lmtn_prompt, prompt_file='prompt.txt'):
+    """Sets up the RetrievalQA chain with the given prompt and database instance."""
+    client = boto3.client(service_name="bedrock-runtime", region_name=REGION)
+    input_token = 0
+    try:
+        if matched_query:
+            with open(prompt_file, 'r') as file:
+                prompt = file.read().replace("$$ID$$", 'job_id').replace("$$VALUE$$", str(job_id)).replace(
+                    "$$common_query$$", str(matched_query)).replace("$$Limitation$$", str(lmtn_prompt))
+                # input_token = calculate_tokens(prompt)
+        elif imp_data:
+            with open(prompt_file, 'r') as file:
+                prompt = file.read().replace("$$ID$$", 'job_id').replace("$$VALUE$$", str(job_id)).replace(
+                    "$$common_query$$", str(matched_query)).replace("$$file_imp_data$$", str(imp_data)).replace(
+                    "$$Limitation$$", str(lmtn_prompt))
+                # input_token = calculate_tokens(prompt)
+        else:
+            with open(prompt_file, 'r') as file:
+                prompt = file.read().replace("$$ID$$", 'job_id').replace("$$VALUE$$", str(job_id)).replace("$$Limitation$$",
+                                                                                                      str(lmtn_prompt))
+                # input_token = calculate_tokens(prompt)
+
+        # Initialize LLM
+        llm = ChatBedrockConverse(
+            client=client,
+            model_id= MODEL_ID
+        )
+
+        # Set up prompt template
+        prompt_template = PromptTemplate(
+            template=prompt,
+            input_variables=["context", "question"]
+        )
+
+        # Create and return the retrieval chain
+        return RetrievalQA.from_chain_type(
+            llm=llm,
+            chain_type="stuff",
+            chain_type_kwargs={"prompt": prompt_template},
+            retriever=db_instance.as_retriever(search_type="mmr", search_kwargs={'k': 9, 'lambda_mult': 0.5}),
+        )
+
+    except FileNotFoundError:
+        raise Exception(f"Prompt file {prompt_file} not found.")
+    except Exception as e:
+        raise Exception(f"An error occurred while creating the RetrievalQA chain: {e}")
+
+
+def get_message(event_params, start_time, queries):
+    connection_id = event_params['target'][0]
+    data = event_params['data']['message']
+    try:
+        if "q_id" in data:
+            q_id = data['q_id']
+        else:
+            q_id = str(uuid.uuid4())
+        types = '1'
+        if "type" in data.keys():
+            types = data['type']
+
+        query = 'None'
+        if types == '1':
+            query = queries
+        # logger.info("queries", query)
+        # Build the message
+        message = {
+            'question': data['question'],
+            'query': query,
+            'ConnectionID': connection_id,
+            'q_id': q_id,
+            'type': types,
+            'job_id': data['job_id'],
+            'org_id': data['org_id'],
+            'start_time': start_time
+        }
+
+        return message
+
+    except KeyError as e:
+        logger.info(f"KeyError: Missing key {str(e)} in input data")
+        raise
+    except Exception as e:
+        logger.info(f"An error occurred: {str(e)}")
+        raise
+
+
+def get_embedding_data(question, db_instance):
+    try:
+        if db_instance:
+            retriever = db_instance.as_retriever(search_type="mmr", search_kwargs={'k': 1, 'lambda_mult': 0.9})
+            matched_docs = retriever.get_relevant_documents(query=question)
+            common_query = [doc.page_content for doc in matched_docs]
+            return common_query
+        else:
+            return None
+    except Exception as e:
+        logger.info(f"An error occurred: {str(e)}")
+        raise
+
+
+def get_embedding_schema_data(question, db_instance):
+    try:
+        if db_instance:
+            retriever = db_instance.as_retriever(search_type="mmr", search_kwargs={'k': 9, 'lambda_mult': 0.9})
+            matched_docs = retriever.get_relevant_documents(query=question)
+            common_query = [doc.page_content for doc in matched_docs]
+            print("common_query:--", common_query)
+            return common_query
+        else:
+            return None
+    except Exception as e:
+        logger.info(f"An error occurred: {str(e)}")
+        raise
+
+
+def send_message_to_event_bridge(message):
+    client = boto3.client('events')
+    try:
+        # Send event to EventBridge
+        response = client.put_events(
+            Entries=[
+                {
+                    'Source': f'{env}-bedrock',
+                    'DetailType': 'event trigger for bedrock',
+                    'Detail': json.dumps(message),
+                    'EventBusName': f'{env}-bedrock-bus'
+                },
+            ]
+        )
+        # Check if the event was successfully sent
+        if response['FailedEntryCount'] > 0:
+            # Log or handle failure
+            return {
+                'statusCode': 500,
+                'body': 'Failed to send message to EventBridge',
+                'details': response
+            }
+
+        return {
+            'statusCode': 200,
+            'body': 'Message sent to EventBridge successfully',
+            'details': response
+        }
+
+    except Exception as e:
+        # Handle and return the exception message
+        return {
+            'statusCode': 500,
+            'body': f'Error sending message to EventBridge: {str(e)}'
+        }
+
+
+def send_message_to_websocket_dispatcher(message_body):
+    sqs_client = boto3.client('sqs')
+    queue_url = os.environ.get('DISPATCHER_QUEUE_URL')
+    try:
+        message = {
+            "target": [message_body['ConnectionID']],
+            "data": {
+                "message": {'q_id': message_body['q_id'], 'answer': message_body['query'], 'statuscode': 200},
+                'type': 6
+            }
+        }
+        sqs_client.send_message(
+            QueueUrl=queue_url,
+            MessageBody=json.dumps(message, default=str),
+            MessageDeduplicationId=str(uuid.uuid4()),
+            MessageGroupId=str(uuid.uuid4())
+        )
+    except Exception as e:
+        logger.info(f"An error occurred on dispatcher: {str(e)}")
+        raise e
+
+
+def get_common_query(question, common_query):
+    try:
+        # Combine the common_query into a single string
+        result = "".join(common_query) if isinstance(common_query, list) else common_query
+        logger.info(f"Combined query data (repr): {repr(result)}")
+
+        # Normalize line endings and strip whitespace
+        result = result.replace('\r\n', '\n').strip()
+
+        # Locate the question and query markers
+        question_marker = f"QUESTION: {question}"
+        query_marker = "QUERY:"
+
+        if question_marker in result and query_marker in result:
+            # Find start and end indices
+            question_start = result.index(question_marker) + len(question_marker)
+            query_start = result.index(query_marker, question_start) + len(query_marker)
+
+            # Extract the query until the next "Good Query:" or end of string
+            query_end = result.find("Good Query:", query_start)
+            query_end = query_end if query_end != -1 else len(result)
+
+            # Extract and clean the query
+            query = result[query_start:query_end].strip()
+            logger.info(f"Extracted query: {query}")
+            return query
+        else:
+            logger.warning("Markers not found in the provided data.")
+            return None
+    except Exception as e:
+        logger.error(f"Error in get_common_query: {e}")
+        return None
+
+
+def check_question(question, common_query):
+    try:
+        # Combine the common_query into a single string
+        result = "".join(common_query) if isinstance(common_query,
+                                                     list) else common_query  # Use repr to see actual string including escape characters
+
+        # Check if the question is in the result
+        if question in result:
+            return True
+        else:
+            return False
+    except Exception as e:
+        logger.info("Error:", e)
+        return None
+
+
+def generate_response(prompt):
+    client = boto3.client(service_name="bedrock-runtime", region_name=REGION)
+    model_id = MODEL_ID_HQ
+
+    response = client.invoke_model(
+        modelId=model_id,
+        body=json.dumps(
+            {
+                "anthropic_version": "bedrock-2023-05-31", "max_tokens": 1500, "top_k": 250, "temperature": 1,
+                "top_p": 0.999,
+                "messages": [
+                    {
+                        "role": "user",
+                        "content": [{"type": "text", "text": prompt}],
+                    }
+                ],
+            }
+        ),
+    )
+
+    response_body = json.loads(response["body"].read())
+    completion = response_body['content'][0]['text']
+    return completion
+
+
+def get_prompt_query(result, value, prompt_file):
+    with open(prompt_file, 'r') as file:
+        prompt = file.read().replace("$$QUERY$$", result).replace("$$VALUE$$", value)
+    return prompt
+
+
+def get_prompt(result, prompt_file):
+    with open(prompt_file, 'r') as file:
+        prompt = file.read().replace("$$QUERY$$", result)
+    return prompt
+
+
+# def get_prompt_condition(result, question):
+#     with open('remove_condition_prompt.txt', 'r') as file:
+#         prompt = file.read().replace("$$QUERY$$", result).replace("$$QUESTION$$", question)
+#     return prompt
+
+def lambda_handler(event, context):
+    """Lambda handler function for processing the request and returning the response."""
+    start_time = t.time()
+    event_params = transform_event(event)
+    logger.info(f"event:- {event_params}")
+    data = event_params['data']['message']
+    job_id = data['job_id']
+    org_id = data['org_id']
+    database = "vec-db"
+    collection_id = data['job_id']
+    collection_id_question = job_id + "_Question"
+    collection_id_files = job_id + "_Files"
+    embed_data_question = None
+    embed_data_file = None
+    query_rag = None
+    input_tokens = 0
+    output_tokens = 0
+
+    with open("AWS_Neptune_OpenCypher_Restrictions.txt", 'r') as file:
+        lmtn_prompt = file.read()
+
+    try:
+        if not check_collection_exists(database, collection_id_question):
+            logger.info("common question not exist, checking files")
+            # Fallback to file data if question collection does not exist
+            if check_collection_exists(database, collection_id_files):
+                logger.info("Using File data")
+                db_instance_schema = get_db_inst(database, collection_id, use_existing=True)
+                embed_schema_data = get_embedding_schema_data(data['question'], db_instance_schema)
+                logger.info(f"embed_schema_data:- {embed_schema_data}")
+                db_instance_file = get_db_inst(database, collection_id_files, use_existing=True)
+                embed_data_file = get_embedding_data(data['question'], db_instance_file)
+                logger.info(f"embed_data_files:- {embed_data_file}")
+                chain = create_chain(
+                    get_db_inst(database, collection_id, use_existing=True),
+                    data['question'], job_id, None, embed_data_file, lmtn_prompt
+                )
+                input_tokens = calculate_prompt_token(embed_schema_data, str(data['question']), job_id, None, embed_data_file, lmtn_prompt)
+                response = chain.invoke(data['question'])
+                logger.info("**Got DATA from Files**")
+            else:
+                logger.info("No Like Query or files data")
+                db_instance_schema = get_db_inst(database, collection_id, use_existing=True)
+                embed_schema_data = get_embedding_schema_data(data['question'], db_instance_schema)
+                logger.info(f"embed_schema_data:- {embed_schema_data}")
+                # input_token_embed = calculate_tokens(embed_data_file)
+                chain = create_chain(
+                    get_db_inst(database, collection_id, use_existing=True),
+                    data['question'], job_id, None, None, lmtn_prompt
+                )
+                input_tokens = calculate_prompt_token(embed_schema_data, str(data['question']), job_id, None,
+                                                      None, lmtn_prompt)
+                response = chain.invoke(data['question'])
+                logger.info("**No Liked query or files data**")
+        else:
+            # Question collection exists
+            logger.info("Question collection exists")
+            db_instance_question = get_db_inst(database, collection_id_question, use_existing=True)
+            embed_data_question = get_embedding_data(data['question'], db_instance_question)
+            logger.info(f"embed_data_question:- {embed_data_question}")
+
+            if check_question(data['question'], embed_data_question):
+                logger.info("Using Like Query")
+                query_rag = get_common_query(data['question'], embed_data_question)
+                logger.info("**Created LIKED Query**")
+            elif check_collection_exists(database, collection_id_files):
+                logger.info("Using File data")
+                db_instance_schema = get_db_inst(database, collection_id, use_existing=True)
+                embed_schema_data = get_embedding_schema_data(data['question'], db_instance_schema)
+                logger.info(f"embed_schema_data:- {embed_schema_data}")
+                db_instance_file = get_db_inst(database, collection_id_files, use_existing=True)
+                embed_data_file = get_embedding_data(data['question'], db_instance_file)
+                logger.info(f"embed_data_files:- {embed_data_file}")
+                chain = create_chain(
+                    get_db_inst(database, collection_id, use_existing=True),
+                    data['question'], job_id, embed_data_question, embed_data_file, lmtn_prompt
+                )
+                input_tokens = calculate_prompt_token(embed_schema_data, str(data['question']), job_id, embed_data_question,
+                                                      embed_data_file, lmtn_prompt)
+                response = chain.invoke(data['question'])
+                logger.info("**Got DATA from Files**")
+            else:
+                logger.info("No Like Query or files data")
+                db_instance_schema = get_db_inst(database, collection_id, use_existing=True)
+                embed_schema_data = get_embedding_schema_data(data['question'], db_instance_schema)
+                logger.info(f"embed_schema_data:- {embed_schema_data}")
+                # input_token_embed = calculate_tokens(embed_data_file)
+                chain = create_chain(
+                    get_db_inst(database, collection_id, use_existing=True),
+                    data['question'], job_id, embed_data_question, None, lmtn_prompt
+                )
+                input_tokens = calculate_prompt_token(embed_schema_data, str(data['question']), job_id, embed_data_question,
+                                                      None, lmtn_prompt)
+                response = chain.invoke(data['question'])
+                logger.info("**No Liked query or files data**")
+
+        # Extract Cypher queries from the response
+        if 'response' in locals() and response and 'result' in response:
+            logger.info("got response")
+            # output_tokens = calculate_tokens(response)
+            match_queries = re.findall(r'```cypher(.*?)```', response['result'], re.DOTALL)
+            query_rag = query_rag or "".join(match_queries)
+        else:
+            logger.warning("Response object is missing or malformed.")
+        if not query_rag:
+            return {
+                'statusCode': 400,
+                'body': 'No Cypher queries found in the response.'
+            }
+        if input_tokens:
+            logger.info(f"input_token:- {input_tokens}")
+        # logger.info(f"output_token:- {output_tokens}")
+        logger.info(f"query_rag:- {query_rag}")
+        # checking backtick
+        backtick_prompt = get_prompt(query_rag, prompt_file='check_backtick_prompt.txt')
+        # input_1 = calculate_tokens(backtick_prompt)
+        backtick_query = generate_response(backtick_prompt)
+        # output_1 = calculate_tokens(backtick_query)
+        logger.info(f"backtick_query:- {backtick_query}")
+        # checking edge variable
+        variable_prompt = get_prompt(backtick_query, prompt_file='check_edge_variable.txt')
+        # input_2 = calculate_tokens(variable_prompt)
+        variable_query = generate_response(variable_prompt)
+        # output_2 = calculate_tokens(variable_query)
+        logger.info(f"variable_query:- {variable_query}")
+        # checking job_id
+        job_id_prompt = get_prompt_query(variable_query, job_id, prompt_file='check_job_id.txt')
+        # input_3 = calculate_tokens(job_id_prompt)
+        job_id_query = generate_response(job_id_prompt)
+        # output_3 = calculate_tokens(job_id_query)
+        logger.info(f"job_id_query:- {job_id_query}")
+        #  adding org_id
+        org_id_prompt = get_prompt_query(job_id_query, org_id, prompt_file='check_org_id.txt')
+        # input_4 = calculate_tokens(org_id_prompt)
+        query = generate_response(org_id_prompt)
+        # output_4 = calculate_tokens(query)
+        logger.info(f"org_id_query:- {query}")
+
+        # total_input_tokens = input_tokens + input_1 + input_2 + input_3 + input_4
+        # total_output_tokens = output_tokens + output_1 + output_2 + output_3 + output_4
+        # logger.info(f"total_input_tokens:-{total_input_tokens}")
+        # logger.info(f"total_output_tokens:-{total_output_tokens}")
+        # timestamp = datetime.utcnow().isoformat()
+        # logger.info(
+        #     json.dumps(
+        #         {
+        #             "timestamp": timestamp,
+        #             "function_name": context.function_name,
+        #             "org-id": org_id,
+        #             "total_input_token": total_input_tokens,
+        #             "total_output_token": total_output_tokens,
+        #         }
+        #     )
+        # )
+        # checking toLower()
+        # lower_prompt = get_prompt(job_id_query, prompt_file ='check_toLower_prompt.txt' )
+        # query = generate_response(lower_prompt)
+        # logger.info(f"lower_query:- {query}")
+
+        # property_lower = get_prompt_property(lower_query)
+        # query = generate_response(property_lower)
+        # checking group_by
+        # groupBy_prompt = get_prompt_groupby(lower_query)
+        # # final query
+        # query = generate_response(groupBy_prompt)
+        # logger.info(f"property_lower query:- {query}")
+
+        logger.info('query sent to Neptune lambda')
+        change_job_id_prompt = get_prompt(query, prompt_file='change_jobid.txt')
+        change_job_id_query = generate_response(change_job_id_prompt)
+        logger.info(f"change_job_id:- {change_job_id_query}")
+        job_message = get_message(event_params, start_time, change_job_id_query)
+        send_message_to_websocket_dispatcher(job_message)
+        message = get_message(event_params, start_time, query)
+        event_bridge_response = send_message_to_event_bridge(message)
+
+        logger.info(json.dumps({"log_type": "sqs", "value": org_id}))
+        logger.info(json.dumps({"log_type": "org_id", "value": org_id}))
+
+        # Check if the message was successfully sent
+        if event_bridge_response.get('statusCode') == 200:
+            logger.info("Message sent to EventBridge successfully!")
+        else:
+            logger.info(f"Failed to send message to EventBridge: {event_bridge_response}")
+
+        return {
+            'statusCode': 200,
+            'body': 'Message Sent'
+        }
+
+    except Exception as e:
+        trace_back = traceback.format_exc()
+        sqs_helper.queue_message(context.function_name, e, trace_back)
+        return {
+            'statusCode': 500,
+            'body': json.dumps({
+                'error': str(e),
+                'traceback': trace_back
+            })
+        }
