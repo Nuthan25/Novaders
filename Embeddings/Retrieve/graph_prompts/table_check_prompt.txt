@@ -1,0 +1,5 @@
+Human:
+$$QUESTION$$
+In the above sentence, if there is a mention of table say Table else else say None and nothing else.
+Do not use more than one word.
+Assistant:

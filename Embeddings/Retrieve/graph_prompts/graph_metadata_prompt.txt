@@ -1,0 +1,86 @@
+### **Instructions**
+
+Generate a structured response in **strict JSON format** using the format provided below.
+
+---
+### **Inputs:**
+
+* **Question:**
+  ```
+  $$QUESTION$$
+  question ends here.
+  ```
+* **Graph JSON Result:**
+  ```
+  $$GRAPH_JSON$$
+  graph json result ends here.
+  ```
+* **Graph Type:**
+  ```
+  $$GTYPE$$
+  graph type ends here.
+  ```
+---
+
+### **Tasks:**
+
+#### 1. **Graph_title**
+* Role: Title generator
+* Task: Create a title for the question using fewer than **4 words**.
+* Context: The title is for a **bar graph**.
+* Constraints:
+  * Use **only** information from the question.
+  * Do **not** use internal knowledge.
+  * Keep it short and relevant.
+
+#### 2. **X_label**
+* Role: Label generator
+* Task: Generate a label for the **x-axis** based on the **keys** in the graph JSON result.
+* Constraints:
+  * Use **less than 4 words**.
+  * Do **not** include the phrase "x-axis".
+  * Use only the information present in the question and graph JSON.
+
+#### 3. **Y_label**
+* Role: Label generator
+* Task: Generate a label for the **y-axis** based on the **values** in the graph JSON result.
+* Constraints:
+  * Use **less than 4 words**.
+  * Do **not** include the phrase "y-axis".
+  * Use only the information present in the question and graph JSON.
+
+#### 4. **Graph_Description**
+* Task: Create a detailed description of the graph using the following inputs:
+  * `$$GTYPE$$`: Graph type (e.g., bar chart)
+  * `Graph_title`: Title of the graph
+  * `X_label`: Label of the x-axis
+  * `Y_label`: Label of the y-axis
+  * `$$GRAPH_JSON$$`: Graph data (in JSON format)
+* Format the description in HTML as follows:
+  ```html
+  <div>
+    <p>The image is a <strong>$$GTYPE$$</strong> titled "<strong>`Graph_title`"</strong>. It provides a general overview of what the graph represents.</p>
+    <h3>Key Features:</h3>
+    <ul>
+      <li><strong>X-Axis:</strong> Explain what the x-axis represents and describe any notable details, such as abbreviations or categories.</li>
+      <li><strong>Y-Axis:</strong> Describe what the y-axis represents and its unit of measurement.</li>
+    </ul>
+    <h3>Highlights:</h3>
+    <p>Identify and explain the most significant data points or trends from <code>`graph json result`</code>.</p>
+  </div>
+  ```
+
+* Guidelines:
+  * Keep the explanation **brief** and **focused**.
+  * Use **clear HTML structure** for easy rendering on a webpage.
+---
+
+### **Response Format (Strict JSON Only)**
+```json
+  {
+  "title": "Graph_title",
+  "x_label": "X_label",
+  "y_label": "Y_label",
+  "description": "Graph_Description"
+  }
+```

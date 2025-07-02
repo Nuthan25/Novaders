@@ -1,0 +1,11 @@
+requests==2.32.2
+boto3
+opensearch-py
+requests_aws4auth
+botocore
+matplotlib
+networkx
+pandas==2.0.3
+numpy==1.24.3
+langchain-aws==0.2.27
+pydantic==2.11.7

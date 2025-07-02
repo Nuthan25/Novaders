@@ -1,0 +1,26 @@
+# AWS Neptune OpenCypher Restrictions
+
+When generating Cypher queries for Neptune:
+
+- Limited pattern matching and traversal support
+- No complex path functions (shortestPath(), allShortestPaths())
+- Basic aggregations only (count, avg, min, max, sum)
+- No arrays or nested structures as property values
+- Limited indexing capabilities, no full-text search
+- Avoid deep/unbounded recursion or very complex patterns
+- No MERGE with full property matching
+- No UNWIND or CALL clauses
+- No user-defined procedures or custom functions
+- Unsupported: BETWEEN clause
+- Avoid duration() function
+- Avoid duration.between function
+- Available date/time functions: datetime(), timestamp(), epochmillis()
+- Only basic arithmetic operations (+, -, *, /, %)
+- Limited date manipulation capabilities
+- All times in UTC without timezone support
+- Avoid adding datetime() to a property name
+- Avoids REDUCE, COLLECT inside aggregations, and nested AVG.
+- Always use toFloat() inside SUM() and AVG() function. example: SUM(toFloat()), AVG(toFloat())
+- Always display the months in order from January to December
+- Always check the question and decided weather it required ordering(ORDER BY) or not. Do not add ordering(ORDER BY) unnecessarily
+- Always include LIMIT 200 in the Cypher query unless a different limit is explicitly specified in the question

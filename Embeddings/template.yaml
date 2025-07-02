@@ -1,0 +1,220 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: OpenSearch Create and Retrieve Embeddings
+
+Parameters:
+  Env:
+    Type: String
+    Description: The name of the stage, e.g. "dev", "preprod", "prod"
+
+  pythonversion:
+    Description: Please specify the python version that will be used in all the lambda runtime.
+    Type: String
+    Default: python3.9
+
+Resources:
+
+  OpenSearchCreateEmbeddingLambdaFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Description: 'OpenSearch Create Embedding for Model'
+      FunctionName: !Sub '${Env}-create-embeddings'
+      CodeUri: Create/
+      Handler: app.lambda_handler
+      Runtime: !Ref pythonversion
+      MemorySize: 5120
+      Timeout: 900
+      Environment:
+        Variables:
+          QUEUE_URL: !Sub
+            - '{{resolve:ssm:/${Env}/cyzapa/sqs/input-trigger-fifo-queue/url}}'
+            - Env: !Ref Env
+          BEDROCK_QUEUE_URL: !Sub
+            - '{{resolve:ssm:/${Env}/cymonix/sqs/bedrockanswer_fifo_queue/url}}'
+            - Env: !Ref Env
+          INDEX_NAME: !Sub '${Env}_index'
+          HOST: !Sub
+            - '{{resolve:ssm:/${Env}/cymonix/opensearch-endpoint}}'
+            - Env: !Ref Env
+          PORT: '443'
+          REGION: !Sub '${AWS::Region}'
+          QUEUE_NAME: !Sub
+            - '{{resolve:ssm:/${Env}/cymonix/sqs/error_fifo_queue/name}}'
+            - Env: !Ref Env
+      VpcConfig:
+        SecurityGroupIds:
+          - !Sub
+            - '{{resolve:ssm:/${Env}/lambda-graph/sec-grp}}'
+            - Env: !Ref Env
+        SubnetIds:
+          - !Sub
+            - '{{resolve:ssm:/${Env}/subnet/privatesubnet1}}'
+            - Env: !Ref Env
+          - !Sub
+            - '{{resolve:ssm:/${Env}/subnet/privatesubnet2}}'
+            - Env: !Ref Env
+      Layers:
+        - !Sub '{{resolve:ssm:/${Env}/layers/arn/error_handler}}'
+      Policies:
+        - AmazonSQSFullAccess
+        - AWSLambdaRole
+        - AmazonS3FullAccess
+        - AWSLambda_FullAccess
+        - AmazonRDSFullAccess
+        - AmazonMachineLearningFullAccess
+
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'events:PutEvents'
+              Resource: !Sub "arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${Env}-bedrock-bus"
+
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'bedrock:InvokeModel'
+                - 'aoss:APIAccessAll'
+                - "aoss:CreateCollection"
+                - "aoss:ListCollections"
+                - "aoss:BatchGetCollection"
+                - "aoss:DeleteCollection"
+                - "aoss:CreateAccessPolicy"
+                - "aoss:ListAccessPolicies"
+                - "aoss:UpdateAccessPolicy"
+                - "aoss:CreateSecurityPolicy"
+                - "aoss:GetSecurityPolicy"
+                - "aoss:UpdateSecurityPolicy"
+                - "iam:ListUsers"
+                - "iam:ListRoles"
+              Resource: "*"
+
+  OpenSearchRetrieveEmbeddingLambdaFunction:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Description: 'OpenSearch Retrieve Embedding for Model'
+      FunctionName: !Sub '${Env}-retriev-embeddings'
+      CodeUri: Retrieve/
+      Handler: app.lambda_handler
+      Runtime: !Ref pythonversion
+      MemorySize: 5120
+      Timeout: 900
+      Environment:
+        Variables:
+          QUEUE_URL: !Sub
+            - '{{resolve:ssm:/${Env}/cymonix/sqs/bedrockanswer_fifo_queue/url}}'
+            - Env: !Ref Env
+          NEPTUNE_ENDPOINT: !Sub
+            - '{{resolve:ssm:/${Env}/neptune/cluster/endpoint}}'
+            - Env: !Ref Env
+          NEPTUNE_PORT: !Sub
+            - '{{resolve:ssm:/${Env}/neptune/cluster/port}}'
+            - Env: !Ref Env
+          BUCKET_NAME: !Sub "${Env}-cymonix-internal"
+          BUCKET_NAME_IMAGE: !Sub "${Env}-cym-resource-icons"
+          INDEX_NAME: !Sub '${Env}_index'
+          OPENSEARCH_HOST: !Sub
+            - '{{resolve:ssm:/${Env}/cymonix/opensearch-endpoint}}'
+            - Env: !Ref Env
+          OPENSEARCH_PORT: '443'
+          IMAGE_LINK: !Sub "${Env}-images.cymonix.net"
+          JOB_ID: "d202ae52-e94f-44f9-966c-51345f14071b"
+          REGION: !Sub '${AWS::Region}'
+          ENV: !Sub '${Env}'
+          TABLE_NAME: !Sub "${Env}-chat-history"
+          MODEL_ID: "us.anthropic.claude-3-7-sonnet-20250219-v1:0"
+          MODEL_ID_HQ: "anthropic.claude-3-haiku-20240307-v1:0"
+          MODEL_ID_C4: "us.anthropic.claude-sonnet-4-20250514-v1:0"
+          AWSREGION: !Sub "${AWS::Region}"
+          DISPATCHER_QUEUE_URL: !Sub
+            - '{{resolve:ssm:/${Env}/cymonix/sqs/dispatcher_fifo_queue/url}}'
+            - Env: !Ref Env
+          BEDROCK_REGION: !Sub
+            - '{{resolve:ssm:/${Env}/cymonix/bedrock/region}}'
+            - Env: !Ref Env
+          QUEUE_NAME: !Sub
+            - '{{resolve:ssm:/${Env}/cymonix/sqs/error_fifo_queue/name}}'
+            - Env: !Ref Env
+      VpcConfig:
+        SecurityGroupIds:
+          - !Sub
+            - '{{resolve:ssm:/${Env}/lambda-graph/sec-grp}}'
+            - Env: !Ref Env
+        SubnetIds:
+          - !Sub
+            - '{{resolve:ssm:/${Env}/subnet/privatesubnet1}}'
+            - Env: !Ref Env
+          - !Sub
+            - '{{resolve:ssm:/${Env}/subnet/privatesubnet2}}'
+            - Env: !Ref Env
+      Layers:
+          - !Sub '{{resolve:ssm:/${Env}/layers/arn/error_handler}}'
+#          - !Sub '{{resolve:ssm:/${Env}/layers/arn/pandas}}'
+#          - !Sub '{{resolve:ssm:/${Env}/layers/arn/langchain}}'
+#          - !Sub '{{resolve:ssm:/${Env}/layers/arn/datascience}}'
+      Policies:
+        - AmazonSQSFullAccess
+        - AWSLambdaRole
+        - AmazonS3FullAccess
+        - AWSLambda_FullAccess
+        - AmazonRDSFullAccess
+        - AmazonMachineLearningFullAccess
+        - AWSLambdaVPCAccessExecutionRole
+        - AmazonSSMReadOnlyAccess
+
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'events:PutEvents'
+              Resource: !Sub "arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${Env}-bedrock-bus"
+
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'bedrock:InvokeModel'
+                - 'bedrock:InvokeModelWithResponseStream'
+              Resource: "*"
+
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'bedrock:InvokeModel'
+                - 'aoss:APIAccessAll'
+                - "aoss:CreateCollection"
+                - "aoss:ListCollections"
+                - "aoss:BatchGetCollection"
+                - "aoss:DeleteCollection"
+                - "aoss:CreateAccessPolicy"
+                - "aoss:ListAccessPolicies"
+                - "aoss:UpdateAccessPolicy"
+                - "aoss:CreateSecurityPolicy"
+                - "aoss:GetSecurityPolicy"
+                - "aoss:UpdateSecurityPolicy"
+                - "iam:ListUsers"
+                - "iam:ListRoles"
+              Resource: "*"
+
+  RetrieveEmbeddingsEventSourceMapping:
+     Type: AWS::Lambda::EventSourceMapping
+     Properties:
+       BatchSize: 1
+       Enabled: true
+       EventSourceArn: !Sub
+         - '{{resolve:ssm:/${Env}/cymonix/sqs/bedrockrag_fifo_queue/arn}}'
+         - Env: !Ref Env
+       FunctionName: !GetAtt OpenSearchRetrieveEmbeddingLambdaFunction.Arn
+
+
+  EmbeddingQueueProcessinglambdaArnSSM:
+    Type: AWS::SSM::Parameter
+    DependsOn: OpenSearchCreateEmbeddingLambdaFunction
+    Properties:
+      Name:
+        Fn::Sub: /${Env}/cymonix/lambda/opensearch_createembedding_lambdafunction/arn
+      Description: 'Holds the ARN for upload Gc Trigger arn'
+      Type: String
+      Value: !GetAtt OpenSearchCreateEmbeddingLambdaFunction.Arn

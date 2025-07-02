@@ -1,0 +1,6 @@
+$$QUERY_RESULT$$
+Change the above dictionary to a new dictionary, the new dictionary will be used to create a $$GRAPH_TYPE$$, provide only the new dictionary and nothing else, Replace (') single quotes with (") double quotes.
+The dictionary values should contain only numbers.
+The dictionary keys should contain only text without numbers.
+result should be in this below form
+{"key":value,"key":value}

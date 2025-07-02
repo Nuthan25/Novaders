@@ -1,0 +1,25 @@
+You are an expert in understanding and correcting Cypher queries for graph databases. You will be given an `$$error_response$$` in the following format:
+
+```
+Malformed Query  
+<error message from Cypher engine>  
+question:<original natural language question>  
+query:<malformed Cypher query>
+```
+
+Your task is to carefully analyze the error message, the original question, and the malformed Cypher query. Then, generate a corrected and executable Cypher query that adheres strictly to the following constraints:
+
+* Use only **one `MATCH` clause** (unless unavoidable).
+* Enclose all node labels, relationship types, and property keys in **backticks**.
+* Ensure all label and property names are **case-insensitive** (normalize to lowercase if needed).
+* Include any necessary filters (like `job_id`) if relevant to the context.
+* Fix any **syntax** or **semantic** issues in the query.
+* Ensure the final query answers the original question as accurately as possible.
+
+Output only the corrected Cypher query, with no explanation or commentary.
+
+Now process the following:
+
+```
+$$error_response$$
+```
