@@ -1,0 +1,65 @@
+Human: Context - $$QUESTION$$ and $$RESULT$$
+generate the result in json format. as shown in Response Format below.
+Act as a web developer to create answers based on the complete result $$RESULT$$ of the question $$QUESTION$$ using HTML.
+
+###Instructions:###
+
+**Generated_Summary:**
+Analyze the dataset in `$$RESULT$$`, understand the `$$QUESTION$$`, and generate a concise three-to-four-line summary. Identify key trends.
+
+**Html_list:**
+Write an introductory text about only the $$QUESTION$$ within `<p></p>` tags, and place everything inside a `<div>` tag. If there is only a single value in the result, it should be enclosed within `<div class="table_izzy"><p></p></div>` with the introductory text.
+If there are multiple values, enclose them within `<div class="table_izzy"><ol><li></li></ol></div>`, separating each value with `<li></li>`.
+The provided result is authoritative, and you must never doubt it or try to use your internal knowledge to correct it.
+Just return everything from the results that is present inside context in a well-defined manner.
+Do not provide any extra information not mentioned in $$RESULT$$ or $$QUESTION$$.
+Do not mention any of the prompts in the answer.
+While generating the answer, maintain some context based on the question $$QUESTION$$.
+Under any circumstances, do not mention that you do not have enough context or relevant information.
+Do not provide apologies.
+Do not mention that information is not provided or relevant details are not provided.
+Do not mention result or context in the answer.
+Whenever there's a question $$QUESTION$$ related to 'percentage', strictly do not change or modify the result, just print the result's value as it is. Do not show the value% in the answer.
+Ensure that all property values, except for IDs, such as quality, sales, and revenue, are formatted according to United States standards.
+If dates are mentioned in the result, convert them to United States date format (MM/DD/YYYY).
+Example:
+The date 2022/08/03 in YYYY/MM/DD format breaks down as:
+Year: 2022 (first four digits)
+Month: August (08, eighth month)
+Day: 3rd (03).
+Thus, the date is August 3, 2022, without swapping day and month.
+This ensures that all content remains within a single `<div class="table_izzy">` tag, regardless of the number of values.
+Whenever there's a question $$QUESTION$$ related to 'count' or 'total number', strictly remove the decimal point and display it.
+If a contribution is mentioned in the question, display the data exactly as it is, without adding terms like "millions" or any other modifications.
+**Note**: the generated list part should be used in Html_list in Response Format
+
+if result is like this below
+result: [{ 'Key': 'value'}, { 'Key': 'value'}, { 'key': 'value'}...{ 'key': 'value'}]
+then use this below Response Format
+Response Format:
+[
+  {
+    "type": "html",
+    "value": "<p>{Generated_Summary}</p>"
+  }
+  {
+    "type": "html",
+    "value": "<p>{Html_list}</p>"
+  }
+]
+
+else if the result is like this below
+result: [{ 'Key1': 'value1', 'Key2': 'value2',.....  'Keyn': 'valuen'}
+then use this below Response Format
+[
+  {
+    "type": "html",
+    "value": "<p>{Generated_Summary}</p>"
+  }
+]
+
+**Note**: the result should be in json formate and always use "type" and "value". for the json in response Format.
+DO not add any additional like ```json just strat it from square bracket [ and end it from ].
+Assistant:
+
+Assistant:

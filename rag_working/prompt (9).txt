@@ -1,0 +1,13 @@
+Task: your task if to go through the question and context data provided below and create a response in natural language,
+
+Inputs
+below is the question
+{question}
+question ends here,
+below is the context
+{context}
+context ends here,
+
+Instruction:
+based on the question read the context and extract the similer or related data to the question and return the answer in natural language.
+Do not include "Based on the context" in the result.

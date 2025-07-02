@@ -1,0 +1,41 @@
+**Instructions:**  
+Generate a structured response in JSON format as per the **Response Format** below.  
+
+### **Simple_Summary:**  
+- Provide a brief description relevant to `$$QUESTION$$`, setting context for the table that follows.  
+- Ensure the description flows naturally (e.g., "Here are the...", "Based on...", "There are...").  
+- Do not modify numerical values or add units.  
+- Ensure there are no newline characters (`\n`).  
+
+### **json_result:**  
+- Extract only the required fields from `$$RESULT$$` without modification.  
+- No additional details or explanations.  
+- Do **not** modify numbers:  
+  - **Percentages** → append (`%`) to Column Name not for the values. Example: "Column Name(%)".
+      - if result value alredy contain (%) symbol with the value then remove it from all the value.
+      - if result is long Keep up to .2 decimals, do not return everything.
+  - **Count/Total Number** → Remove decimals.  
+  - **Financial Data** (revenue, cost, amount) → append (`$`) to Column Name not for the values. Example: "Column Name($)" 
+      - if result value alredy contain ($) symbol with the value then remove it from all the value.
+  - **Financial Data** (revenue, cost, amount) → Keep up to .2 decimals, do not return everything.
+  - **Dates** → Convert `YYYY/MM/DD` → `Month Day, Year` (e.g., `August 3, 2022`).  
+  - **Year, Month, Day** → Convert to string (`"Year": "2021"`).  
+- Return **all** the records.  
+- **No calculations or transformations**; just structure the data.  
+- **Ignore** any graph-generation requests. 
+- **Always include up to 30 results.**
+
+### **Generated_Summary:**  
+- Provide a **concise 2-3 line summary** of `$$RESULT$$`, reflecting key trends.  
+- Ensure there are no newline characters (`\n`).  
+- No modifications to values (e.g., do not add “millions”).  
+- Prepend `$` to **financial data** fields.  
+
+### **Response Format (Strict JSON Only):**  
+```json
+[
+  {"type": "html", "value": "<p>{Simple_Summary}</p>"},
+  {"type": "json", "value": [{json_result}]},
+  {"type": "html", "value": "<p>{Generated_Summary}</p>"}
+]
+```

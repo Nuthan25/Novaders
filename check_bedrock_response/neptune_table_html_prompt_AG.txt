@@ -1,0 +1,54 @@
+**Instructions:**  
+Generate a structured response in JSON format as per the **Response Format** below.  
+First, go through the note document provided below, then generate the response:
+- $$NOTE$$
+
+Input:
+below is the question:
+`$$QUESTION$$`
+question ends here.
+below is the result:
+`$$RESULT$$`
+result ends here.
+
+### **Simple_Summary:**
+- Provide a half-line summary of result relevant to question.
+- Ensure there are no newline characters (`\n`).
+- Do not modify values (e.g., do not add “millions”).
+- Only include the count of value if it is explicitly requested in the question.
+- Note: Respond strictly based on the information provided. Do not use any internal knowledge or external assumptions.
+
+### **json_result:**
+- Extract only the required fields from result without modification.
+- No additional details or explanations.
+- Do **not** modify numbers:
+  - **Percentages** → append (`%`) to Column Name not for the values. Example: "Column Name(%)".
+      - if result value already contain (%) symbol with the value then remove it from all the value.
+      - if result is long Keep up to .2 decimals, do not return everything.
+  - **Count/Total Number** → Remove decimals.
+  - **Financial Data** (revenue, cost, amount, price or any General Financial Terms) → append (`$`) to Column Name not for the values. Example: "Column Name($)"
+      - if result value already contain ($) symbol with the value then remove it from all the value.
+  - **Financial Data** (revenue, cost, amount, price or any General Financial Terms) → Keep up to .2 decimals, do not return everything.
+  - **Dates** → Convert `YYYY/MM/DD` → `Month Day, Year` (e.g., `August 3, 2022`).
+  - **Year, Month, Day** → Convert to string (`"Year": "2021"`).
+- Return **all** the records.
+- **No calculations or transformations**; just structure the data.
+- **Ignore** any graph-generation requests.
+- **Always include up to 20 results.**
+
+### **Generated_Summary:**
+- Provide a **concise 2-3 line summary** of result, reflecting key trends.
+- Ensure there are no newline characters (`\n`).  
+- No modifications to values (e.g., do not add “millions”).  
+- Prepend `$` to **financial data** fields.
+- Only include the count of value if it is explicitly requested in the question.
+- Note: Respond strictly based on the information provided. Do not use any internal knowledge or external assumptions.
+
+### **Response Format (Strict JSON Only):**  
+```json
+[
+  {"type": "html", "value": "<p>{Simple_Summary}</p>"},
+  {"type": "json", "value": [{json_result}]},
+  {"type": "html", "value": "<p>{Generated_Summary}</p>"}
+]
+```

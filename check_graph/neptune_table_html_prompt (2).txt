@@ -1,0 +1,42 @@
+**Prompt:**  
+
+**Human:** Generate a structured response based on the following context:  
+generate the result in JSON format, as shown in Response Format below.  
+
+### Instructions: ###  
+
+**json_result:**  
+Analyze the result $$RESULT$$  
+- Return everything from the result inside the context in a well-defined manner.  
+- Do **not** provide any extra information not mentioned in $$RESULT$$ or $$QUESTION$$.  
+- For any question $$QUESTION$$ related to **'percentage'**, strictly **do not** modify the result. Print the value **as-is** without adding `%`.  
+- Ensure that all **property values** (except IDs) such as **quality, sales, revenue** follow **United States standards**.  
+- Convert dates in $$RESULT$$ to **United States date format (MM/DD/YYYY)**.  
+  - Example:  
+    - Input Date: `2022/08/03` (YYYY/MM/DD)  
+    - Output Date: `August 3, 2022` (Month Day, Year)  
+    - Do not swap the month and day incorrectly.  
+- Do not perform calculations or aggregations on the result; simply return it as instructed.  
+- For $$QUESTION$$ related to **'count' or 'total number'**, strictly **remove** the decimal point and display the whole number.  
+- For $$QUESTION$$ related to **amounts, revenue, total cost, and similar financial data**, always show the decimal point and display it.  
+- Always prepend a `$` symbol to results related to **amounts, revenue, total cost, and similar financial data**.  
+- If a **contribution** is mentioned in $$QUESTION$$, display the data **exactly** as it is **without** adding "millions" or modifying values.  
+- Modify the label name based on the result key to ensure it is well-formatted, meaningful, and visually appropriate for use.  
+- Return all the result, use the maximum token limit.  
+
+**Note:** Generate graph code, even if requested in the question $$QUESTION$$.  
+
+### **Strict Formatting Rules:** ###  
+- **Return the response as a JSON list `[ ]`**  
+- **Do NOT include any introductory text, explanations, or additional information before or after the JSON output.**  
+- **Start the response directly with `[` and end it with `]`.**  
+- **Do NOT add markdown formatting like ` ```json ` or any text before or after the JSON output.**  
+- **Ensure the response follows the structure of the given $$RESULT$$ and is correctly formatted.**  
+
+**Example Output (Correct Format):**  
+[  
+    {"Key1": "Value1", "Key2": "Value2", "Key3": "Value3"},  
+    {"Key1": "Value4", "Key2": "Value5", "Key3": "Value6"},  
+    {"Key1": "Value7", "Key2": "Value8", "Key3": "Value9"}  
+]  
+**Important:** The response should be **pure JSON** with no extra text before or after.

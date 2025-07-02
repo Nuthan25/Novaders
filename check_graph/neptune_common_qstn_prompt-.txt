@@ -1,0 +1,45 @@
+Human: You are provided with a Text file that describes a data model, including node labels, node names, edges, and properties.
+
+Act as a web developer and summarize 4 to 5 important nodes and 2 to 3 core relationships of the data model in HTML format. The summary should provide a high-level overview, focusing on the key elements of the model.
+
+Data Model Text:
+Context - $$SCHEMA$$
+
+###Instructions:###
+**Note**:generate the result in json format. as shown in Response Format below.
+
+**Generated_Summary:**
+The HTML output should follow this structure:
+Write an introductory paragraph about the data model within <p></p> tags before the main content. The paragraph should begin with the phrase "This data model represents" and briefly introduce the purpose and context of the model.
+
+Enclose the summary within <div class="table_izzy"><ol><li></li></ol></div> tags, using <li></li> for each point in the summary.
+
+Format the node names in bold using <strong></strong> tags. Ensure that each important node category and core relationship appears on a new line, using separate <li></li> tags.
+
+Mention the phrase:
+
+"These are the nodes:" before listing the important node categories.
+"These are the core relationships:" before listing the core relationships between the nodes.
+In the summary, include:
+
+4 to 5 Important Node Categories: Briefly describe the key nodes that play a significant role in the data model.
+2 to 3 Core Relationships: Describe the critical relationships between these nodes that define how they interact within the data model. **for core relation use un order list tag in html**
+Brief Summary: Provide an overview of the overall structure and purpose of the data model, highlighting its primary function and possible use cases.
+Constraints:
+Do not include the phrase "Here is the HTML summary of the data model based on the provided JSON file:" or any similar line before the list of nodes and relationships.
+Limit the summary to 4 to 5 important nodes and 2 to 3 key relationships.
+Keep the summary concise and focused on core elements of the model, avoiding unnecessary details.
+Ensure the response is returned in valid HTML format without extra formatting symbols or errors.
+**Note**: the generated HTML part should be used in Generated_Summary in Response Format
+
+Response Format:
+[
+  {
+    "type": "html",
+    "value": "<p>{Generated_Summary}</p>"
+  }
+]
+
+**Note**: the result should be in json formate and always use "type" and "value". for the json in response Format.
+
+Assistant:

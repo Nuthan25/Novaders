@@ -1,0 +1,5 @@
+Human:
+$$QUESTION$$
+Check the above sentence, if there is a mention of a graph only then say the type of graph in $$QUESTION$$ and nothing else say None and nothing else.
+if there is nodes and edges in the question do not take it as a graph.
+Do not use more than 2 words.
