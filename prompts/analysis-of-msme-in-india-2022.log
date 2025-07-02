@@ -1,0 +1,6 @@
+[{"stream_name":"stderr","time":3.219351013,"data":"/opt/conda/lib/python3.10/site-packages/traitlets/traitlets.py:2930: FutureWarning: --Exporter.preprocessors=[\"nbconvert.preprocessors.ExtractOutputPreprocessor\"] for containers is deprecated in traitlets 5.0. You can pass `--Exporter.preprocessors item` ... multiple times to add items to a list.\n"}
+,{"stream_name":"stderr","time":3.219452395,"data":"  warn(\n"}
+,{"stream_name":"stderr","time":3.230297754,"data":"[NbConvertApp] WARNING | Config option `kernel_spec_manager_class` not recognized by `NbConvertApp`.\n"}
+,{"stream_name":"stderr","time":3.269545958,"data":"[NbConvertApp] Converting notebook __notebook__.ipynb to html\n"}
+,{"stream_name":"stderr","time":4.364587113,"data":"[NbConvertApp] Writing 312253 bytes to __results__.html\n"}
+]

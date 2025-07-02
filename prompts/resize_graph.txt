@@ -1,0 +1,19 @@
+def resize_graph(graph):
+    try:
+        # Create a buffer to hold the resized image
+        buffer = io.BytesIO()
+        # Decode the base64 string to get the image data
+        imgdata = base64.b64decode(graph)
+        # Open the image using PIL
+        img = Image.open(io.BytesIO(imgdata))
+        # Resize the image
+        new_img = img.resize((543, 345))  # x, y
+        # Save the resized image to the buffer in PNG format
+        new_img.save(buffer, format="PNG")
+        # Encode the resized image back to base64
+        img_b64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+        # Return the base64 string without any extra characters
+        return img_b64
+    except Exception as e:
+        logger.info(e)
+        return 'error'

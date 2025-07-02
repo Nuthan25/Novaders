@@ -1,0 +1,522 @@
+The Amazon Neptune release of openCypher generally supports the clauses, operators, expressions, functions, and syntax defined in the by the current openCypher specification, which is the Cypher Query Language Reference Version 9. Limitations and differences in Neptune support for openCypher are called out below.
+
+Amazon Neptune also supports several features beyond the scope of the openCypher specification. Refer to openCypher extensions in Amazon Neptune for details.
+
+Note
+The current Neo4j implementation of Cypher contains functionality that is not contained in the openCypher specification mentioned above. If you are migrating current Cypher code to Neptune, see Neptune compatibility with Neo4j and Rewriting Cypher queries to run in openCypher on Neptune for more information.
+
+Support for openCypher clauses in Neptune
+
+Neptune supports the following clauses, except as noted:
+
+MATCH   –   Supported, except that shortestPath() and allShortestPaths() are not currently supported.
+
+OPTIONAL MATCH
+
+MANDATORY MATCH   –   is not currently supported in Neptune. Neptune does, however, support custom ID values in MATCH queries.
+
+RETURN   –   Supported, except when used with non-static values for SKIP or LIMIT. For example, the following currently does not work:
+
+
+MATCH (n)
+RETURN n LIMIT toInteger(rand())    // Does NOT work!
+WITH   –   Supported, except when used with non-static values for SKIP or LIMIT. For example, the following currently does not work:
+
+
+MATCH (n)
+WITH n SKIP toInteger(rand())
+WITH count() AS count
+RETURN count > 0 AS nonEmpty    // Does NOT work!
+UNWIND
+
+WHERE
+
+ORDER BY
+
+SKIP
+
+LIMIT
+
+CREATE   –   Neptune lets you create custom ID values in CREATE queries.
+
+DELETE
+
+SET
+
+REMOVE
+
+MERGE   –   Neptune supports custom ID values in MERGE queries.
+
+CALL[YIELD...]   –   is not currently supported in Neptune.
+
+UNION, UNION ALL   –   read-only queries are supported, but mutation queries are not currently supported.
+
+USING   –   USING is supported from engine version 1.3.2.0. See Query hints for more information.
+
+Support for openCypher operators in Neptune
+
+Neptune supports the following operators, except as noted:
+
+General operators
+DISTINCT
+
+The . operator for accessing properties of a nested literal map.
+
+Mathematical operators
+The + addition operator.
+
+The - subtraction operator.
+
+The * multiplication operator.
+
+The / division operator.
+
+The % modulo division operator.
+
+The ^ exponentiation operator is NOT supported.
+
+Comparison operators
+The = addition operator.
+
+The <> inequality operator.
+
+The < less-than operator is supported except when either of the arguments is a Path, List, or Map.
+
+The > greater-than operator is supported except when either of the arguments is a Path, List, or Map.
+
+The <= less-than-or-equal-to operator is supported except when either of the arguments is a Path, List, or Map.
+
+The >= greater-than-or-equal-to operator is supported except when either of the arguments is a Path, List, or Map.
+
+IS NULL
+
+IS NOT NULL
+
+STARTS WITH is supported if the data being searched for is a string.
+
+ENDS WITH is supported if the data being searched for is a string.
+
+CONTAINS is supported if the data being searched for is a string.
+
+Boolean operators
+AND
+
+OR
+
+XOR
+
+NOT
+
+String operators
+The + concatenation operator.
+
+List operators
+The + concatenation operator.
+
+IN (checks for the presence of an item in the list)
+
+Support for openCypher expressions in Neptune
+
+Neptune supports the following expressions, except as noted:
+
+CASE
+
+The [] expression is is not currently supported in Neptune for accessing dynamically computed property keys within a node, relationship, or map. For example, the following does not work:
+
+
+MATCH (n)
+WITH [5, n, {key: 'value'}] AS list
+RETURN list[1].name
+Support for openCypher functions in Neptune
+
+Neptune supports the following functions, except as noted:
+
+Predicate functions
+exists()
+
+Scalar functions
+coalesce()
+
+endNode()
+
+epochmillis()
+
+head()
+
+id()
+
+last()
+
+length()
+
+randomUUID()
+
+properties()
+
+removeKeyFromMap
+
+size()   –   this overloaded method currently only works for pattern expressions, lists, and strings
+
+startNode()
+
+timestamp()
+
+toBoolean()
+
+toFloat()
+
+toInteger()
+
+type()
+
+Aggregating functions
+avg()
+
+collect()
+
+count()
+
+max()
+
+min()
+
+percentileDisc()
+
+stDev()
+
+percentileCont()
+
+stDevP()
+
+sum()
+
+List functions
+join() (concatenates strings in a list into a single string)
+
+keys()
+
+labels()
+
+nodes()
+
+range()
+
+relationships()
+
+reverse()
+
+tail()
+
+Mathematical functions – numeric
+abs()
+
+ceil()
+
+floor()
+
+rand()
+
+round()
+
+sign()
+
+Mathematical functions – logarithmic
+e()
+
+exp()
+
+log()
+
+log10()
+
+sqrt()
+
+Mathematical functions – trigonometric
+acos()
+
+asin()
+
+atan()
+
+atan2()
+
+cos()
+
+cot()
+
+degrees()
+
+pi()
+
+radians()
+
+sin()
+
+tan()
+
+String functions
+join() (concatenates strings in a list into a single string)
+
+left()
+
+lTrim()
+
+replace()
+
+reverse()
+
+right()
+
+rTrim()
+
+split()
+
+substring()
+
+toLower()
+
+toString()
+
+toUpper()
+
+trim()
+
+User-defined functions
+
+User-defined functions are not currently supported in Neptune.
+
+Neptune-specific openCypher implementation details
+
+The following sections describe ways in which the Neptune implementation of openCypher may differ from or go beyond the openCypher spec.
+
+Variable-length path (VLP) evaluations in Neptune
+Variable length path (VLP) evaluations discover paths between nodes in the graph. Path length can be unrestricted in a query. To prevent cycles, the openCypher spec specifies that each edge must be traversed at most once per solution.
+
+For VLPs, the Neptune implementation deviates from the openCypher spec in that it only supports constant values for property equality filters. Take the following query:
+
+MATCH (x)-[:route*1..2 {dist:33, code:x.name}]->(y) return x,y
+Because the x.name property equality filter value is a not a constant, this query results in an UnsupportedOperationException with the message: Property predicate over variable-length relationships with non-constant expression is not supported in this release.
+
+Temporal support in the Neptune openCypher implementation (Neptune database 1.3.1.0 and below)
+Neptune currently provides limited support for temporal function in openCypher. It supports the DateTime data type for temporal types.
+
+The datetime() function can be used to get the current UTC date and time like this:
+
+
+RETURN  datetime() as res
+Date and time values can be parsed from strings in a "dateTtime" format where date and time are both expressed in one of the supported forms below:
+
+Supported date formats
+yyyy-MM-dd
+
+yyyyMMdd
+
+yyyy-MM
+
+yyyy-DDD
+
+yyyyDDD
+
+yyyy
+
+Supported time formats
+HH:mm:ssZ
+
+HHmmssZ
+
+HH:mm:ssZ
+
+HH:mmZ
+
+HHmmZ
+
+HHZ
+
+HHmmss
+
+HH:mm:ss
+
+HH:mm
+
+HHmm
+
+HH
+
+For example:
+
+
+RETURN datetime('2022-01-01T00:01')      // or another example:
+RETURN datetime('2022T0001')
+Note that all date/time values in Neptune openCypher are stored and retrieved as UTC values.
+
+Neptune openCypher uses a statement clock, meaning that the same instant in time is used throughout the duration of a query. A different query within the same transaction may use a different instant in time.
+
+Neptune doesn't support use of a function within a call to datetime(). For example, the following won't work:
+
+
+CREATE (:n {date:datetime(tostring(2021))})  // ---> NOT ALLOWED!
+Neptune does support the epochmillis() function that converts a datetime to epochmillis. For example:
+
+
+MATCH (n) RETURN epochMillis(n.someDateTime)
+1698972364782
+Neptune doesn't currently support other functions and operations on DateTime objects, such as addition and subtraction.
+
+Temporal support in the Neptune openCypher implementation (Neptune Analytics and Neptune Database 1.3.2.0 and above)
+The following datetime functionality for OpenCypher applies to Neptune Analytics. Alternatively, you can use the labmode parameter DatetimeMillisecond=enabled for enabling the following datetime functionality on Neptune engine release version 1.3.2.0 and above. For more details about using this functionality in labmode, see Extended datetime support.
+
+Support for milliseconds. Datetime literal will always be returned with milliseconds, even if milliseconds is 0. (Previous behavior was to truncate milliseconds.)
+
+
+CREATE (:event {time: datetime('2024-04-01T23:59:59Z')})
+
+# Returning the date returns with 000 suffixed representing milliseconds
+MATCH(n:event)
+RETURN n.time as datetime
+
+{
+  "results" : [ {
+    "n" : {
+      "~id" : "0fe88f7f-a9d9-470a-bbf2-fd6dd5bf1a7d",
+      "~entityType" : "node",
+      "~labels" : [ "event" ],
+      "~properties" : {
+        "time" : "2024-04-01T23:59:59.000Z"
+      }
+    }
+  } ]
+}
+Support for calling the datetime() function over stored properties or intermediate results. For example, the following queries were not possible prior to this feature.
+
+Datetime() over properties:
+
+
+// Create node with property 'time' stored as string
+CREATE (:event {time: '2024-04-01T23:59:59Z'})
+
+// Match and return this property as datetime
+MATCH(n:event)
+RETURN datetime(n.time) as datetime
+Datetime() over intermediate results:
+
+
+// Parse datetime from parameter
+UNWIND $list as myDate
+RETURN datetime(myDate) as d
+It is now also possible to save datetime perperties that are created the in cases mentioned above.
+
+Saving datetime from the string property of one property to another:
+
+
+// Create node with property 'time' stored as string
+CREATE (:event {time: '2024-04-01T23:59:59Z', name: 'crash'})
+
+// Match and update the same property to datetime type
+MATCH(n:event {name: 'crash'})
+SET n.time = datetime(n.time)
+
+// Match and update another node's property
+MATCH(e:event {name: 'crash'})
+MATCH(n:server {name: e.servername})
+SET n.time = datetime(e.time)
+Batch create nodes from a parameter with a datetime property:
+
+
+// Batch create from parameter
+UNWIND $list as events
+CREATE (n:crash) {time: datetime(events.time)}
+// Parameter value
+{
+  "x":[
+    {"time":"2024-01-01T23:59:29", "name":"crash1"},
+    {"time":"2023-01-01T00:00:00Z", "name":"crash2"}
+  ]
+}
+Support for a larger subset of ISO8601 datetime formats. See below.
+
+Supported formats
+
+The format of a datetime value is [Date]T[Time][Timezone], where T is the separator. If an explicit timezone is not provided, UTC (Z) is assumed to be the default.
+
+Timezone
+
+Supported timezone formats are:
+
++/-HH:mm
+
++/-HHmm
+
++/-HH
+
+The presence of a timezone in a datetime string is optional. In case the timezone offset is 0, Z can be used instead of the timezone postfix above to indicate UTC time. The supported range of a timezone is from -14:00 to +14:00.
+
+Date
+
+If no timezone is present, or the timezone is UTC (Z), the supported date formats are as follows:
+
+Note
+DDD refers to an ordinal date, which represents a day of the year from 001 to 365 (366 in leap years). For example, 2024-002 represents Jan 2, 2024.
+
+yyyy-MM-dd
+
+yyyyMMdd
+
+yyyy-MM
+
+yyyyMM
+
+yyyy-DDD
+
+yyyyDDD
+
+yyyy
+
+If a timezone other than Z is chosen, the supported date formats are limited to the following:
+
+yyyy-MM-dd
+
+yyyy-DDD
+
+yyyyDDD
+
+The supported range for dates is from 1400-01-01 to 9999-12-31.
+
+Time
+
+If no timezaone is present, or the timezone is UTC (Z), the supported time formats are:
+
+HH:mm:ss.SSS
+
+HH:mm:ss
+
+HHmmss.SSS
+
+HHmmss
+
+HH:mm
+
+HHmm
+
+HH
+
+If a timezone other than Z is chosen, the supported time formats are limited to the following:
+
+HH:mm:ss
+
+HH:mm:ss.SSS
+
+Differences in Neptune openCypher language semantics
+Neptune represents node and relationship IDs as strings rather than integers. The ID equals the ID supplied via the data loader. If there is a namespace for the column, the namespace plus the ID. Consequently, the id function returns a string instead of an integer.
+
+The INTEGER datatype is limited to 64 bits. When converting larger floating point or string values to an integer using the TOINTEGER function, negative values are truncated to LLONG_MIN and positive values are truncated to LLONG_MAX.
+
+For example:
+
+
+RETURN TOINTEGER(2^100)
+>  9223372036854775807
+
+RETURN TOINTEGER(-1 * 2^100)
+>  -9223372036854775808
+Multi-valued properties
+Although openCypher CREATE does not create multi-valued properties, they can exist in data created using Gremlin (Neptune Database) or when loading data (Neptune Database and Neptune Analytics). If Neptune openCypher encounters a multi-value property, one of the values is arbitrarily chosen, creating a non-deterministic result.

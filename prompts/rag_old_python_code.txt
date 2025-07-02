@@ -1,0 +1,385 @@
+import json
+import boto3
+import os
+import re
+import traceback
+import logging
+from langchain.embeddings import BedrockEmbeddings
+from langchain.vectorstores.pgvector import PGVector
+from langchain.docstore.document import Document
+from langchain_community.chat_models import BedrockChat
+from langchain.chains import RetrievalQA
+from langchain.prompts import PromptTemplate
+import psycopg2
+import time as t
+import uuid
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+# Constants
+env = os.getenv('ENV')
+DB_HOST = os.getenv('DB_HOST')
+DB_USER = os.getenv('DB_USER')
+DB_PASSWORD = os.getenv('DB_PASSWORD')
+DB_PORT = os.getenv('DB_PORT')
+MODEL_ID = os.getenv('MODEL_ID')
+REGION = os.getenv('AWS_REGION')
+
+
+def transform_event(event):  # Read event from event-bridge
+    try:
+        event_params = event['Records'][0]["body"]
+        event_params = json.loads(event_params)
+        return event_params
+    except Exception as e:
+        raise e
+
+
+def cred(db_name):
+    """Generates a PostgreSQL connection string."""
+    try:
+        connection_str = PGVector.connection_string_from_db_params(
+            driver='psycopg2',
+            user=DB_USER,
+            password=DB_PASSWORD,
+            host=DB_HOST,
+            port=DB_PORT,
+            database=db_name,
+        )
+        logger.info(f"Connection string generated: {connection_str}")
+        return connection_str
+    except Exception as e:
+        logger.info(f"Error generating connection string: {str(e)}")
+        raise e
+
+def check_collection_exists(database, collection_name: str) -> bool:
+    # Establish connection to the PostgreSQL database
+    connection = psycopg2.connect(
+        host=DB_HOST,
+        database=database,  # Connect to the specified database
+        user=DB_USER,
+        password=DB_PASSWORD,
+        port=DB_PORT,
+    )
+    try:
+        with connection:
+            with connection.cursor() as cursor:
+                # Example query to check collection existence
+                query = """
+                SELECT EXISTS(
+                    SELECT 1
+                    FROM langchain_pg_collection
+                    WHERE name = %s
+                );
+                """
+                cursor.execute(query, (collection_name,))
+                exists = cursor.fetchone()[0]
+        return exists
+    except Exception as e:
+        logger.info(f"Error checking collection existence: {e}")
+        return False
+
+def check_collection_exists(database, collection_name: str) -> bool:
+    # Establish connection to the PostgreSQL database
+    connection = psycopg2.connect(
+        host=DB_HOST,
+        database=database,  # Connect to the specified database
+        user=DB_USER,
+        password=DB_PASSWORD,
+        port=DB_PORT,
+    )
+    try:
+        with connection:
+            with connection.cursor() as cursor:
+                # Example query to check collection existence
+                query = """
+                SELECT EXISTS(
+                    SELECT 1
+                    FROM langchain_pg_collection
+                    WHERE name = %s
+                );
+                """
+                cursor.execute(query, (collection_name,))
+                exists = cursor.fetchone()[0]
+        return exists
+    except Exception as e:
+        logger.info(f"Error checking collection existence: {e}")
+        return False
+
+
+def create_or_get_db_inst(database, collection_name, schema_data, use_existing=True):
+    # Initialize the text embedding model
+    embeddings = BedrockEmbeddings()
+    CONNECTION_STRING = cred(database)
+
+    if use_existing:
+        # Check if the collection exists
+        if check_collection_exists(database, collection_name):
+            # Get an existing PGVector instance
+            vector_store = PGVector.from_existing_index(
+                embedding=embeddings,
+                collection_name=collection_name,
+                connection_string=CONNECTION_STRING
+            )
+        else:
+            # Collection does not exist; create a new vector store
+            vector_store = PGVector.from_documents(
+                documents=schema_data,
+                embedding=embeddings,
+                collection_name=collection_name,
+                connection_string=CONNECTION_STRING
+            )
+    else:
+        # Create a new PGVector instance and populate it with document data and embeddings
+        vector_store = PGVector.from_documents(
+            documents=schema_data,
+            embedding=embeddings,
+            collection_name=collection_name,
+            connection_string=CONNECTION_STRING
+        )
+
+    return vector_store
+
+
+def get_db_inst(database, collection_name, use_existing=True):
+    # Initialize the text embedding model
+    embeddings = BedrockEmbeddings()
+    CONNECTION_STRING = cred(database)
+
+    if use_existing:
+        # Check if the collection exists
+        vector = PGVector.from_existing_index(
+            embedding=embeddings,
+            collection_name=collection_name,
+            connection_string=CONNECTION_STRING
+        )
+
+    return vector
+
+
+def create_chain(db_instance, question, job_id, matched_query, imp_data, prompt_file='prompt.txt'):
+    """Sets up the RetrievalQA chain with the given prompt and database instance."""
+    client = boto3.client(service_name="bedrock-runtime", region_name=REGION)
+
+    try:
+        if matched_query:
+            with open(prompt_file, 'r') as file:
+                prompt = file.read().replace("$$ID$$", 'job_id').replace("$$VALUE$$", job_id).replace("$$common_query$$", str(matched_query))
+        elif imp_data:
+            with open(prompt_file, 'r') as file:
+                prompt = file.read().replace("$$ID$$", 'job_id').replace("$$VALUE$$", job_id).replace("$$common_query$$", str(matched_query)).replace("$$file_imp_data$$", str(imp_data))
+        else:
+            with open(prompt_file, 'r') as file:
+                prompt = file.read().replace("$$ID$$", 'job_id').replace("$$VALUE$$", job_id)
+
+        # Initialize LLM
+        llm = BedrockChat(
+            client=client,
+            model_id=MODEL_ID
+        )
+
+        # Set up prompt template
+        prompt_template = PromptTemplate(
+            template=prompt,
+            input_variables=["context", "question"]
+        )
+
+        # Create and return the retrieval chain
+        return RetrievalQA.from_chain_type(
+            llm=llm,
+            chain_type="stuff",
+            chain_type_kwargs={"prompt": prompt_template},
+            retriever=db_instance.as_retriever(search_type="mmr", search_kwargs={'k': 9, 'lambda_mult': 0.5}),
+        )
+
+    except FileNotFoundError:
+        raise Exception(f"Prompt file {prompt_file} not found.")
+    except Exception as e:
+        raise Exception(f"An error occurred while creating the RetrievalQA chain: {e}")
+
+
+def get_message(event_params, start_time, queries):
+    connection_id = event_params['target'][0]
+    data = event_params['data']['message']
+    try:
+        if "q_id" in data:
+            q_id = data['q_id']
+        else:
+            q_id = str(uuid.uuid4())
+        types = '1'
+        if "type" in data.keys():
+            types = data['type']
+
+        query = 'None'
+        if types == '1':
+            query = queries
+        # logger.info("queries", query)
+        # Build the message
+        message = {
+            'question': data['question'],
+            'query': query,
+            'ConnectionID': connection_id,
+            'q_id': q_id,
+            'type': types,
+            'job_id': data['job_id'],
+            'org_id': data['org_id'],
+            'start_time': start_time
+        }
+
+        return message
+
+    except KeyError as e:
+        logger.info(f"KeyError: Missing key {str(e)} in input data")
+        raise
+    except Exception as e:
+        logger.info(f"An error occurred: {str(e)}")
+        raise
+
+
+def get_embedding_data(question, db_instance):
+    try:
+        retriever = db_instance.as_retriever(search_type="mmr", search_kwargs={'k': 1, 'lambda_mult': 0.9})
+        matched_docs = retriever.get_relevant_documents(query=question)
+        common_query = [doc.page_content for doc in matched_docs]
+        return common_query
+    except Exception as e:
+        logger.info(f"An error occurred: {str(e)}")
+        raise
+
+
+def send_message_to_event_bridge(message):
+    client = boto3.client('events')
+    try:
+        # Send event to EventBridge
+        response = client.put_events(
+            Entries=[
+                {
+                    'Source': f'{env}-bedrock',
+                    'DetailType': 'event trigger for bedrock',
+                    'Detail': json.dumps(message),
+                    'EventBusName': f'{env}-bedrock-bus'
+                },
+            ]
+        )
+        # Check if the event was successfully sent
+        if response['FailedEntryCount'] > 0:
+            # Log or handle failure
+            return {
+                'statusCode': 500,
+                'body': 'Failed to send message to EventBridge',
+                'details': response
+            }
+
+        return {
+            'statusCode': 200,
+            'body': 'Message sent to EventBridge successfully',
+            'details': response
+        }
+
+    except Exception as e:
+        # Handle and return the exception message
+        return {
+            'statusCode': 500,
+            'body': f'Error sending message to EventBridge: {str(e)}'
+        }
+
+
+def send_message_to_websocket_dispatcher(message_body):
+    sqs_client = boto3.client('sqs')
+    queue_url = os.environ.get('DISPATCHER_QUEUE_URL')
+    try:
+        message = {
+            "target": [message_body['ConnectionID']],
+            "data": {
+                "message": {'q_id': message_body['q_id'], 'answer': message_body['query'], 'statuscode': 200},
+                'type': 6
+            }
+        }
+        sqs_client.send_message(
+            QueueUrl=queue_url,
+            MessageBody=json.dumps(message, default=str),
+            MessageDeduplicationId=str(uuid.uuid4()),
+            MessageGroupId=str(uuid.uuid4())
+        )
+    except Exception as e:
+        logger.info(f"An error occurred on dispatcher: {str(e)}")
+        raise e
+
+
+def lambda_handler(event, context):
+    """Lambda handler function for processing the request and returning the response."""
+    start_time = t.time()
+    event_params = transform_event(event)
+    logger.info(f"event:- {event_params}")
+    data = event_params['data']['message']
+    job_id = data['job_id']
+    database = "vec-db"
+    collection_id = data['job_id']
+    collection_id_question = job_id + "_Question"
+    collection_id_files = job_id + "_Files"
+    embed_data_question = None
+    embed_data_file = None
+    try:
+        if check_collection_exists(database, collection_id_question):
+            logger.info("Using Like Query")
+            db_instance_schema = get_db_inst(database, collection_id, use_existing=True)
+            db_instance_question = get_db_inst(database, collection_id_question, use_existing=True)
+            question = data['question']
+            embed_data_question = get_embedding_data(question, db_instance_question)
+            logger.info(f"embed_data_question:-, {embed_data_question}")
+            chain = create_chain(db_instance_schema, question, job_id, embed_data_question, embed_data_file)
+            response = chain.invoke(question)
+        elif check_collection_exists(database, collection_id_files):
+            logger.info("File exist")
+            db_instance_schema = get_db_inst(database, collection_id, use_existing=True)
+            db_instance_question = get_db_inst(database, collection_id_question, use_existing=True)
+            db_instance_file = get_db_inst(database, collection_id_files, use_existing=True)
+            question = data['question']
+            embed_data_question = get_embedding_data(question, db_instance_question)
+            embed_data_file = get_embedding_data(question, db_instance_file)
+            logger.info(f"embed_data_files:-, {embed_data_file}")
+            chain = create_chain(db_instance_schema, question, job_id, embed_data_question, embed_data_file)
+            response = chain.invoke(question)
+        else:
+            logger.info("No Like Query")
+            db_instance_schema = get_db_inst(database, collection_id, use_existing=True)
+            question = data['question']
+            chain = create_chain(db_instance_schema, question, job_id, embed_data_question, embed_data_file)
+            response = chain.invoke(question)
+
+        # Extract Cypher queries from the response
+        match_queries = re.findall(r'```cypher(.*?)```', response['result'], re.DOTALL)
+        queries = "".join(match_queries)
+        logger.info(f"queries:--{queries}")
+        if not queries:
+            return {
+                'statusCode': 400,
+                'body': 'No Cypher queries found in the response.'
+            }
+        message = get_message(event_params, start_time, queries)
+        logger.info('before dispatcher')
+        send_message_to_websocket_dispatcher(message)
+        logger.info('after dispatcher')
+        event_bridge_response = send_message_to_event_bridge(message)
+
+        # Check if the message was successfully sent
+        if event_bridge_response.get('statusCode') == 200:
+            logger.info("Message sent to EventBridge successfully!")
+        else:
+            logger.info(f"Failed to send message to EventBridge: {event_bridge_response}")
+
+        return {
+            'statusCode': 200,
+            'body': 'Message Sent'
+        }
+
+    except Exception as e:
+        trace_back = traceback.format_exc()
+        return {
+            'statusCode': 500,
+            'body': json.dumps({
+                'error': str(e),
+                'traceback': trace_back
+            })
+        }

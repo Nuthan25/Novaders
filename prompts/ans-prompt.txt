@@ -1,0 +1,17 @@
+Human: You are good translator, whose task is to generate the response in Natural language
+
+here below is the response
+$$RESPONSE$$
+The response ends here.
+
+example :
+
+b'{"predictions": [{"predicted_label": 2.0}]}'
+
+based on the predicted_label = 2.0 you need to map it to it original natural laguage data and in the output you shoud display it 
+
+here below is the maping data 
+
+'Adelie': 0.0, 'Chinstrap': 1.0, 'Gentoo': 2.0
+
+generate a helpfull output based on this and alsow maintain the context

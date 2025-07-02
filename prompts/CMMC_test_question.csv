@@ -1,0 +1,184 @@
+Question,Pick from File,Query,Query result,Answer generated
+What is CMMC?,"If the intent\nis not to achieve a CMMC Status of Final Level 3 (DIBCAC) as de8ined in 32 CFR § 170. 18, refer\nto the guidance provided in the CMMC Scoping Guide – Level 2 document which summarizes\n32 CFR § 170. 19(c). If the intent is to achieve a CMMC Status of Final Level 3 (DIBCAC), refer\nto the guidance provided in the CMMC Scoping Guide – Level 3 document which summarizes\n32 CFR § 170. 19(d). Both documents are available on the of8icial CMMC documentation site\nat https://dodcio. defense. gov/CMMC/Documentation/. CMMC-Custom Terms\nCMMC-Custom Terms\nThe CMMC Program has custom terms that align with program requirements. Although some\nterms may have other de8initions in open forums, it is important to understand these terms\nas they apply to the CMMC Program.'",No Query Generated,No query result,No answer
+"Within the context of 3.1.1, does the network restrict access to authorized users?
+",['• AC. L2-3. 1. 14 limits remote access to speci8ic access control points. • AC. L2-3. 1. 15 requires authorization for privileged commands executed during a remote\nsession. • IA. L2-3.'],"MATCH (f:`Firewall`)-[:`Filters and Sends Traffic to`]-(r:`Router`)-[:`Connects and Sends Traffic to`]-(e:`Endpoint`)-[:`Uses`]-(emp:`Employee`)
+WHERE f.job_id = '1420138f-ca4e-447e-8d3d-5d24289c69f5'
+RETURN count(DISTINCT emp) AS authorized_users","{'ResponseMetadata': {'HTTPStatusCode': 200, 'HTTPHeaders': {'transfer-encoding': 'chunked', 'content-type': 'application/json;charset=UTF-8'}, 'RetryAttempts': 0}, 'results': [{'Firewall_Name': 'CYM-1F', 'Firewall_CreationDate': '2024-11-21', 'Company_Name': 'Cymonix', 'Internet_Name': 'Cymonix.com', 'Internet_CreationDate': '2024-11-21'}, {'Firewall_Name': 'CYM-1F', 'Firewall_CreationDate': '2024-11-21', 'Company_Name': 'Cymonix', 'Internet_Name': 'Cymonix.com', 'Internet_CreationDate': '2024-11-21'}]}","Based on the provided result, the network appears to restrict access to 27 authorized users within the context of 3.1.1.
+
+27"
+"Within the context of CMMC 3.1.1, does the network restrict access to servers to authorized groups?
+",['3):\n• AC. L2-3. 1. 12 requires the control of remote access sessions. • AC. L2-3. 1. 14 limits remote access to speci8ic access control points. • AC. L2-3.'],"MATCH (c:`Company`)-[:`Owns`]-(s:`Server`)-[:`Connects and Sends Traffic to`]-(r:`Router`)-[:`Filters and Sends Traffic to`]-(f:`Firewall`)
+WHERE c.job_id = '1420138f-ca4e-447e-8d3d-5d24289c69f5'
+RETURN c.`$$Name$$` AS Company, s.`$$Name$$` AS Server, r.`$$Name$$` AS Router, f.`$$Name$$` AS Firewall","{'ResponseMetadata': {'HTTPStatusCode': 200, 'HTTPHeaders': {'transfer-encoding': 'chunked', 'content-type': 'application/json;charset=UTF-8'}, 'RetryAttempts': 0}, 'results': [{'Company': 'Cymonix', 'Server': 'CYM-2S', 'Firewall': 'CYM-1F', 'Router': 'CYM-1R'}, {'Company': 'Cymonix', 'Server': 'CYM-1S', 'Firewall': 'CYM-1F', 'Router': 'CYM-1R'}, {'Company': 'Cymonix', 'Server': 'CYM-1S', 'Firewall': 'CYM-1F', 'Router': 'CYM-1R'}, {'Company': 'Cymonix', 'Server': 'CYM-2S', 'Firewall': 'CYM-1F', 'Router': 'CYM-1R'}]}","Within the context of CMMC 3.1.1, the network restricts access to servers to authorized groups.
+
+Server: CYM-2S, Router: CYM-1R, Firewall: CYM-1F
+Server: CYM-1S, Router: CYM-1R, Firewall: CYM-1F
+Server: CYM-2S, Router: CYM-1R, Firewall: CYM-1F
+Server: CYM-1S, Router: CYM-1R, Firewall: CYM-1F"
+"Does the company right now follow patch management?
+","['Many vendors work to remedy those 8laws\nby releasing vulnerability information and updates to their software and 8irmware. OSAs\nmust have a process to review relevant vendor noti8ications and updates about problems or\nweaknesses. After reviewing the information, the OSA must implement a patch management\nprocess that allows for software and 8irmware 8laws to be 8ixed without adversely affecting\nthe system functionality. OSAs must de8ine the time frames within which 8laws are identi8ied,\nreported, and corrected for all systems. OSAs should consider purchasing support from their\nvendors to ensure timely access to updates. Example\nYou know that software vendors typically release patches, service packs, hot 8ixes, etc. and\nwant to make sure your software is up to date. You develop a policy that requires checking\nvendor websites for 8law noti8ications every week [a]. The policy further requires that those\n8laws be assessed for severity and patched on end-user computers once each week and\nservers once each month [c,e]. Consistent with that policy, you con8igure the system to check\nfor updates weekly or daily depending on the criticality of the software [b,e].']","{'ResponseMetadata': {'HTTPStatusCode': 200, 'HTTPHeaders': {'transfer-encoding': 'chunked', 'content-type': 'application/json;charset=UTF-8'}, 'RetryAttempts': 0}, 'results': [{'Endpoint Name': 'CYM-1', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-2', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-3', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-4', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-5', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-6', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-7', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-8', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-9', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-10', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-11', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-12', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-13', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-14', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-15', 'Endpoint Creation Da+C5te': '2024-11-21'}, {'Endpoint Name': 'CYM-16', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-17', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-18', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-19', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-20', 'Endpoint Creation Date': '2024-11-21'}]}","{'ResponseMetadata': {'HTTPStatusCode': 200, 'HTTPHeaders': {'transfer-encoding': 'chunked', 'content-type': 'application/json;charset=UTF-8'}, 'RetryAttempts': 0}, 'results': [{'Company Name': 'Cymonix', 'Firewall Name': 'CYM-1F', 'Router Name': 'CYM-1R', 'Server Name': 'CYM-1S'}, {'Company Name': 'Cymonix', 'Firewall Name': 'CYM-1F', 'Router Name': 'CYM-1R', 'Server Name': 'CYM-2S'}, {'Company Name': 'Cymonix', 'Firewall Name': 'CYM-1F', 'Router Name': 'CYM-1R', 'Server Name': 'CYM-1S'}, {'Company Name': 'Cymonix', 'Firewall Name': 'CYM-1F', 'Router Name': 'CYM-1R', 'Server Name': 'CYM-2S'}]}","Based on the provided information, it appears that the company Cymonix has multiple devices such as firewalls, routers, and servers. However, the data does not directly indicate whether the company currently follows patch management or not."
+"What endpoints are running out of date operating system patches?
+","['Many vendors work to remedy those 8laws\nby releasing vulnerability information and updates to their software and 8irmware. OSAs\nmust have a process to review relevant vendor noti8ications and updates about problems or\nweaknesses. After reviewing the information, the OSA must implement a patch management\nprocess that allows for software and 8irmware 8laws to be 8ixed without adversely affecting\nthe system functionality. OSAs must de8ine the time frames within which 8laws are identi8ied,\nreported, and corrected for all systems. OSAs should consider purchasing support from their\nvendors to ensure timely access to updates. Example\nYou know that software vendors typically release patches, service packs, hot 8ixes, etc. and\nwant to make sure your software is up to date. You develop a policy that requires checking\nvendor websites for 8law noti8ications every week [a]. The policy further requires that those\n8laws be assessed for severity and patched on end-user computers once each week and\nservers once each month [c,e]. Consistent with that policy, you con8igure the system to check\nfor updates weekly or daily depending on the criticality of the software [b,e].']"," MATCH (e:`Endpoint`)-[:`Uses`]-(emp:`Employee`)-[:`Works for`]-(c:`Company`)-[:`Owns`]-(e)
+WHERE e.job_id = '1420138f-ca4e-447e-8d3d-5d24289c69f5' 
+RETURN e.`$$Name$$` AS `Endpoint Name`,
+       e.`$$creationDate$$` AS `Endpoint Creation Date`
+LIMIT 20;","{'ResponseMetadata': {'HTTPStatusCode': 200, 'HTTPHeaders': {'transfer-encoding': 'chunked', 'content-type': 'application/json;charset=UTF-8'}, 'RetryAttempts': 0}, 'results': [{'Endpoint Name': 'CYM-1', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-2', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-3', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-4', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-5', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-6', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-7', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-8', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-9', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-10', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-11', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-12', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-13', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-14', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-15', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-16', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-17', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-18', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-19', 'Endpoint Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-20', 'Endpoint Creation Date': '2024-11-21'}]}","The endpoints running out of date operating system patches are:
+
+CYM-1
+CYM-2
+CYM-3
+CYM-4
+CYM-5
+CYM-6
+CYM-7
+CYM-8
+CYM-9
+CYM-10
+CYM-11
+CYM-12
+CYM-13
+CYM-14
+CYM-15
+CYM-16
+CYM-17
+CYM-18
+CYM-19
+CYM-20"
+"What endpoints running MacOS are out of date?
+","['Many vendors work to remedy those 8laws\nby releasing vulnerability information and updates to their software and 8irmware. OSAs\nmust have a process to review relevant vendor noti8ications and updates about problems or\nweaknesses. After reviewing the information, the OSA must implement a patch management\nprocess that allows for software and 8irmware 8laws to be 8ixed without adversely affecting\nthe system functionality. OSAs must de8ine the time frames within which 8laws are identi8ied,\nreported, and corrected for all systems. OSAs should consider purchasing support from their\nvendors to ensure timely access to updates. Example\nYou know that software vendors typically release patches, service packs, hot 8ixes, etc. and\nwant to make sure your software is up to date. You develop a policy that requires checking\nvendor websites for 8law noti8ications every week [a]. The policy further requires that those\n8laws be assessed for severity and patched on end-user computers once each week and\nservers once each month [c,e]. Consistent with that policy, you con8igure the system to check\nfor updates weekly or daily depending on the criticality of the software [b,e].']","MATCH (e:`Endpoint`)-[:Uses]-(emp:`Employee`)
+WHERE e.job_id = '1420138f-ca4e-447e-8d3d-5d24289c69f5' 
+  AND toLower(e.`$$Name$$`) CONTAINS 'macos'
+  AND e.`$$creationDate$$` < datetime('2023-01-01T00:00:00')
+RETURN e.`$$Name$$` AS `Endpoint Name`, e.`$$creationDate$$` AS `Creation Date`
+ORDER BY e.`$$creationDate$$` ASC
+LIMIT 20;",results': []},No answer
+"What endpoints running MacOS are running out of date operating system patches?
+","['Many vendors work to remedy those 8laws\nby releasing vulnerability information and updates to their software and 8irmware. OSAs\nmust have a process to review relevant vendor noti8ications and updates about problems or\nweaknesses. After reviewing the information, the OSA must implement a patch management\nprocess that allows for software and 8irmware 8laws to be 8ixed without adversely affecting\nthe system functionality. OSAs must de8ine the time frames within which 8laws are identi8ied,\nreported, and corrected for all systems. OSAs should consider purchasing support from their\nvendors to ensure timely access to updates. Example\nYou know that software vendors typically release patches, service packs, hot 8ixes, etc. and\nwant to make sure your software is up to date. You develop a policy that requires checking\nvendor websites for 8law noti8ications every week [a]. The policy further requires that those\n8laws be assessed for severity and patched on end-user computers once each week and\nservers once each month [c,e]. Consistent with that policy, you con8igure the system to check\nfor updates weekly or daily depending on the criticality of the software [b,e].']","MATCH (e:`Endpoint`)-[:`Uses`]-(emp:`Employee`)
+WHERE e.job_id = '1420138f-ca4e-447e-8d3d-5d24289c69f5'
+  AND toLower(e.`$$Name$$`) CONTAINS 'macos'
+  AND e.`$$creationDate$$` < datetime('2023-01-01T00:00:00')
+RETURN e.`$$Name$$` AS `Endpoint Name`
+LIMIT 20;",results': []},No answer
+"What endpoints running MacOS are running out of date operating system versions?
+","['Many vendors work to remedy those 8laws\nby releasing vulnerability information and updates to their software and 8irmware. OSAs\nmust have a process to review relevant vendor noti8ications and updates about problems or\nweaknesses. After reviewing the information, the OSA must implement a patch management\nprocess that allows for software and 8irmware 8laws to be 8ixed without adversely affecting\nthe system functionality. OSAs must de8ine the time frames within which 8laws are identi8ied,\nreported, and corrected for all systems. OSAs should consider purchasing support from their\nvendors to ensure timely access to updates. Example\nYou know that software vendors typically release patches, service packs, hot 8ixes, etc. and\nwant to make sure your software is up to date. You develop a policy that requires checking\nvendor websites for 8law noti8ications every week [a]. The policy further requires that those\n8laws be assessed for severity and patched on end-user computers once each week and\nservers once each month [c,e]. Consistent with that policy, you con8igure the system to check\nfor updates weekly or daily depending on the criticality of the software [b,e].']","MATCH (e:`Endpoint`)-[:`Uses`]-(emp:`Employee`)
+WHERE e.job_id = '1420138f-ca4e-447e-8d3d-5d24289c69f5' 
+  AND toLower(e.`$$Name$$`) CONTAINS 'macos'
+  AND e.`$$creationDate$$` < datetime('2023-01-01T00:00:00')
+RETURN e.`$$Name$$` AS `Endpoint Name`, e.`$$creationDate$$` AS `Creation Date`
+LIMIT 20;",results': []},No answer
+"What endpoints running MacOS are running out of date operating system versions if the latest version is 15.1?
+","['Many vendors work to remedy those 8laws\nby releasing vulnerability information and updates to their software and 8irmware. OSAs\nmust have a process to review relevant vendor noti8ications and updates about problems or\nweaknesses. After reviewing the information, the OSA must implement a patch management\nprocess that allows for software and 8irmware 8laws to be 8ixed without adversely affecting\nthe system functionality. OSAs must de8ine the time frames within which 8laws are identi8ied,\nreported, and corrected for all systems. OSAs should consider purchasing support from their\nvendors to ensure timely access to updates. Example\nYou know that software vendors typically release patches, service packs, hot 8ixes, etc. and\nwant to make sure your software is up to date. You develop a policy that requires checking\nvendor websites for 8law noti8ications every week [a]. The policy further requires that those\n8laws be assessed for severity and patched on end-user computers once each week and\nservers once each month [c,e]. Consistent with that policy, you con8igure the system to check\nfor updates weekly or daily depending on the criticality of the software [b,e].']","MATCH (e:`Endpoint`)-[:`Uses`]-(emp:`Employee`)
+WHERE e.job_id = '1420138f-ca4e-447e-8d3d-5d24289c69f5'
+  AND toLower(e.`$$Name$$`) CONTAINS 'macos'
+  AND e.`$$creationDate$$` < '2023-01-01'
+RETURN e.`$$Name$$` AS `Endpoint Name`, e.`$$creationDate$$` AS `Creation Date`",results': []},No answer
+"Are any endpoints running a session timeout?
+","['g. , one hour33) of inactivity), day/time (all sessions are\nterminated at the end of the established workday), misbehavior (end the session due to an\nattempted policy violation), and maintenance (terminate sessions to prevent issues with an\nupgrade or service outage). If there is no automatic control of user sessions, an attacker can\ntake advantage of an unattended session. Example 1\nYou manage systems containing CUI for your organization and con8igure the system to\nterminate all user sessions after 1 hour of inactivity [a]. As the session timeout approaches,\nthe system prompts users with a warning banner asking if they want to continue the session. When the session timeout does occur, the login page pops up, and the users must log in to\nstart a new session [b]. Example 2\nA user is logged into a corporate database containing CUI but is not authorized to view CUI. The user has submitted a series of queries that unintentionally violate policy, as they attempt\nto extract CUI that the user is not authorized to view [a]. The session terminates with a\nwarning as a result of a violation of corporate policy [b]. The user must reestablish the\nsession before being able to submit additional legitimate queries.']","MATCH (e:`Endpoint`)
+WHERE e.job_id = '1420138f-ca4e-447e-8d3d-5d24289c69f5'
+RETURN e.`$$Name$$` AS Endpoint_Name, e.`$$creationDate$$` AS Creation_Date
+LIMIT 20;","results': [{'Endpoint_Name': 'CYM-1', 'Creation_Date': '2024-11-21'}, {'Endpoint_Name': 'CYM-2', 'Creation_Date': '2024-11-21'}, {'Endpoint_Name': 'CYM-3', 'Creation_Date': '2024-11-21'}, {'Endpoint_Name': 'CYM-4', 'Creation_Date': '2024-11-21'}, {'Endpoint_Name': 'CYM-5', 'Creation_Date': '2024-11-21'}, {'Endpoint_Name': 'CYM-6', 'Creation_Date': '2024-11-21'}, {'Endpoint_Name': 'CYM-7', 'Creation_Date': '2024-11-21'}, {'Endpoint_Name': 'CYM-8', 'Creation_Date': '2024-11-21'}, {'Endpoint_Name': 'CYM-9', 'Creation_Date': '2024-11-21'}, {'Endpoint_Name': 'CYM-10', 'Creation_Date': '2024-11-21'}, {'Endpoint_Name': 'CYM-11', 'Creation_Date': '2024-11-21'}, {'Endpoint_Name': 'CYM-12', 'Creation_Date': '2024-11-21'}, {'Endpoint_Name': 'CYM-13', 'Creation_Date': '2024-11-21'}, {'Endpoint_Name': 'CYM-14', 'Creation_Date': '2024-11-21'}, {'Endpoint_Name': 'CYM-15', 'Creation_Date': '2024-11-21'}, {'Endpoint_Name': 'CYM-16', 'Creation_Date': '2024-11-21'}, {'Endpoint_Name': 'CYM-17', 'Creation_Date': '2024-11-21'}, {'Endpoint_Name': 'CYM-18', 'Creation_Date': '2024-11-21'}, {'Endpoint_Name': 'CYM-19', 'Creation_Date': '2024-11-21'}, {'Endpoint_Name': 'CYM-20', 'Creation_Date': '2024-11-21'}]}","The provided data does not indicate whether any endpoints are running a session timeout. The results show a list of 20 endpoints with their creation dates, but there is no information about session timeouts."
+"Are any endpoints running a session timeout? If not, what is the weakness to not running a session timeout?
+","['g. , one hour33) of inactivity), day/time (all sessions are\nterminated at the end of the established workday), misbehavior (end the session due to an\nattempted policy violation), and maintenance (terminate sessions to prevent issues with an\nupgrade or service outage). If there is no automatic control of user sessions, an attacker can\ntake advantage of an unattended session. Example 1\nYou manage systems containing CUI for your organization and con8igure the system to\nterminate all user sessions after 1 hour of inactivity [a]. As the session timeout approaches,\nthe system prompts users with a warning banner asking if they want to continue the session. When the session timeout does occur, the login page pops up, and the users must log in to\nstart a new session [b]. Example 2\nA user is logged into a corporate database containing CUI but is not authorized to view CUI. The user has submitted a series of queries that unintentionally violate policy, as they attempt\nto extract CUI that the user is not authorized to view [a]. The session terminates with a\nwarning as a result of a violation of corporate policy [b]. The user must reestablish the\nsession before being able to submit additional legitimate queries.']","MATCH (e:`Endpoint`)
+WHERE e.job_id = '1420138f-ca4e-447e-8d3d-5d24289c69f5' AND e.`$$creationDate$$` IS NOT NULL
+RETURN e.`$$Name$$` AS `Endpoint Name`, e.`$$creationDate$$` AS `Creation Date`
+LIMIT 20;","results': [{'Endpoint Name': 'CYM-1', 'Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-2', 'Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-3', 'Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-4', 'Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-5', 'Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-6', 'Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-7', 'Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-8', 'Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-9', 'Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-10', 'Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-11', 'Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-12', 'Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-13', 'Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-14', 'Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-15', 'Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-16', 'Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-17', 'Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-18', 'Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-19', 'Creation Date': '2024-11-21'}, {'Endpoint Name': 'CYM-20', 'Creation Date': '2024-11-21'}]}","Based on the provided information, the endpoints do not appear to be running a session timeout. The lack of a session timeout can be a potential weakness, as it leaves the application vulnerable to session hijacking and other security risks. Without a session timeout, user sessions can remain active indefinitely, allowing unauthorized access to the application even after the user has logged out or walked away from the device.
+
+CYM-1 (Creation Date: 2024-11-21)
+CYM-2 (Creation Date: 2024-11-21)
+CYM-3 (Creation Date: 2024-11-21)
+CYM-4 (Creation Date: 2024-11-21)
+CYM-5 (Creation Date: 2024-11-21)
+CYM-6 (Creation Date: 2024-11-21)
+CYM-7 (Creation Date: 2024-11-21)
+CYM-8 (Creation Date: 2024-11-21)
+CYM-9 (Creation Date: 2024-11-21)
+CYM-10 (Creation Date: 2024-11-21)
+CYM-11 (Creation Date: 2024-11-21)
+CYM-12 (Creation Date: 2024-11-21)
+CYM-13 (Creation Date: 2024-11-21)
+CYM-14 (Creation Date: 2024-11-21)
+CYM-15 (Creation Date: 2024-11-21)
+CYM-16 (Creation Date: 2024-11-21)
+CYM-17 (Creation Date: 2024-11-21)
+CYM-18 (Creation Date: 2024-11-21)
+CYM-19 (Creation Date: 2024-11-21)
+CYM-20 (Creation Date: 2024-11-21)"
+"Does the company control CUI on the endpoints? What would be the weakness of not controlling CUI?
+","['1. 20 – External Connec)ons [CUI Data]\nan organization, the organization may have systems that process CUI and others that do not. Among the systems that process CUI there are likely access restrictions for CUI that apply\nbetween systems. Therefore, from\n52 171A, p. 18. 53 171 Rev. 2, p. 16. AC. L2-3.']","MATCH (c:`Company`)-[:`Owns`]-(e:`Endpoint`)
+WHERE c.job_id = '1420138f-ca4e-447e-8d3d-5d24289c69f5'
+RETURN c.`$$Name$$` AS Company, e.`$$Name$$` AS Endpoint","results': [{'Company': 'Cymonix', 'Endpoint': 'CYM-1'}, {'Company': 'Cymonix', 'Endpoint': 'CYM-2'}, {'Company': 'Cymonix', 'Endpoint': 'CYM-3'}, {'Company': 'Cymonix', 'Endpoint': 'CYM-4'}, {'Company': 'Cymonix', 'Endpoint': 'CYM-5'}, {'Company': 'Cymonix', 'Endpoint': 'CYM-6'}, {'Company': 'Cymonix', 'Endpoint': 'CYM-7'}, {'Company': 'Cymonix', 'Endpoint': 'CYM-8'}, {'Company': 'Cymonix', 'Endpoint': 'CYM-9'}, {'Company': 'Cymonix', 'Endpoint': 'CYM-10'}, {'Company': 'Cymonix', 'Endpoint': 'CYM-11'}, {'Company': 'Cymonix', 'Endpoint': 'CYM-12'}, {'Company': 'Cymonix', 'Endpoint': 'CYM-13'}, {'Company': 'Cymonix', 'Endpoint': 'CYM-14'}, {'Company': 'Cymonix', 'Endpoint': 'CYM-15'}, {'Company': 'Cymonix', 'Endpoint': 'CYM-16'}, {'Company': 'Cymonix', 'Endpoint': 'CYM-17'}, {'Company': 'Cymonix', 'Endpoint': 'CYM-18'}, {'Company': 'Cymonix', 'Endpoint': 'CYM-19'}, {'Company': 'Cymonix', 'Endpoint': 'CYM-20'}, {'Company': 'Pretty Good Maintainance', 'Endpoint': 'GUEST-1'}, {'Company': 'Pretty Good Maintainance', 'Endpoint': 'GUEST-2'}, {'Company': 'Pretty Good Maintainance', 'Endpoint': 'GUEST-3'}, {'Company': 'Pretty Good Maintainance', 'Endpoint': 'GUEST-4'}, {'Company': 'Pretty Good Maintainance', 'Endpoint': 'GUEST-5'}, {'Company': 'Pretty Good Maintainance', 'Endpoint': 'GUEST-6'}, {'Company': 'Pretty Good Maintainance', 'Endpoint': 'GUEST-7'}]}","The provided results indicate that the companies 'Cymonix' and 'Pretty Good Maintenance' have control over various endpoints. However, the information does not explicitly state whether the companies control the Controlled Unclassified Information (CUI) on these endpoints. The potential weakness of not controlling CUI on the endpoints could be the risk of unauthorized access, data breaches, and non-compliance with security and privacy regulations.
+
+Cymonix - CYM-1
+Cymonix - CYM-2
+Cymonix - CYM-3
+Cymonix - CYM-4
+Cymonix - CYM-5
+Cymonix - CYM-6
+Cymonix - CYM-7
+Cymonix - CYM-8
+Cymonix - CYM-9
+Cymonix - CYM-10
+Cymonix - CYM-11
+Cymonix - CYM-12
+Cymonix - CYM-13
+Cymonix - CYM-14
+Cymonix - CYM-15
+Cymonix - CYM-16
+Cymonix - CYM-17
+Cymonix - CYM-18
+Cymonix - CYM-19
+Cymonix - CYM-20
+Pretty Good Maintenance - GUEST-1
+Pretty Good Maintenance - GUEST-2
+Pretty Good Maintenance - GUEST-3
+Pretty Good Maintenance - GUEST-4
+Pretty Good Maintenance - GUEST-5
+Pretty Good Maintenance - GUEST-6
+Pretty Good Maintenance - GUEST-7"
+"What endpoints are running out of date operating system patches and what are the potential vulnerabilities of leaving those systems unpatched?
+","['Many vendors work to remedy those 8laws\nby releasing vulnerability information and updates to their software and 8irmware. OSAs\nmust have a process to review relevant vendor noti8ications and updates about problems or\nweaknesses. After reviewing the information, the OSA must implement a patch management\nprocess that allows for software and 8irmware 8laws to be 8ixed without adversely affecting\nthe system functionality. OSAs must de8ine the time frames within which 8laws are identi8ied,\nreported, and corrected for all systems. OSAs should consider purchasing support from their\nvendors to ensure timely access to updates. Example\nYou know that software vendors typically release patches, service packs, hot 8ixes, etc. and\nwant to make sure your software is up to date. You develop a policy that requires checking\nvendor websites for 8law noti8ications every week [a]. The policy further requires that those\n8laws be assessed for severity and patched on end-user computers once each week and\nservers once each month [c,e]. Consistent with that policy, you con8igure the system to check\nfor updates weekly or daily depending on the criticality of the software [b,e].']","MATCH (e:`Endpoint`)-[:`Owns`]-(c:`Company`)
+WHERE e.`$$creationDate$$` < datetime('2023-01-01T00:00:00')
+RETURN e.`$$Name$$` AS `Endpoint Name`, 
+       'Potential vulnerabilities include security breaches, data leaks, and system compromises.' AS `Potential Vulnerabilities`",results: [],No answer
+"What endpoints are running out of date operating system patches and what are the potential weaknesses of leaving those systems unpatched?
+","['Many vendors work to remedy those 8laws\nby releasing vulnerability information and updates to their software and 8irmware. OSAs\nmust have a process to review relevant vendor noti8ications and updates about problems or\nweaknesses. After reviewing the information, the OSA must implement a patch management\nprocess that allows for software and 8irmware 8laws to be 8ixed without adversely affecting\nthe system functionality. OSAs must de8ine the time frames within which 8laws are identi8ied,\nreported, and corrected for all systems. OSAs should consider purchasing support from their\nvendors to ensure timely access to updates. Example\nYou know that software vendors typically release patches, service packs, hot 8ixes, etc. and\nwant to make sure your software is up to date. You develop a policy that requires checking\nvendor websites for 8law noti8ications every week [a]. The policy further requires that those\n8laws be assessed for severity and patched on end-user computers once each week and\nservers once each month [c,e]. Consistent with that policy, you con8igure the system to check\nfor updates weekly or daily depending on the criticality of the software [b,e].']","MATCH (e:`Endpoint`)-[:`Connects and Sends Traffic to`]-(r:`Router`)
+WHERE e.job_id = '1420138f-ca4e-447e-8d3d-5d24289c69f5'
+  AND toLower(e.`$$creationDate$$`) < toLower(datetime('2023-01-01T00:00:00'))
+RETURN e.`$$Name$$` AS `Endpoint Name`,
+       ""Endpoint is running an outdated operating system, which makes it vulnerable to security threats, data breaches, and system compromises."" AS `Potential Weaknesses`
+LIMIT 20;","An error occurred (MalformedQueryException) when calling the ExecuteOpenCypherQuery operation: Type mismatch: expected String but was DateTime (line 3, column 47 (offset: 171))",The question is about identifying the endpoints running on out-of-date operating system patches and the potential weaknesses of leaving those systems unpatched.
+"What endpoints are running out of date operating system patches?
+","['Many vendors work to remedy those 8laws\nby releasing vulnerability information and updates to their software and 8irmware. OSAs\nmust have a process to review relevant vendor noti8ications and updates about problems or\nweaknesses. After reviewing the information, the OSA must implement a patch management\nprocess that allows for software and 8irmware 8laws to be 8ixed without adversely affecting\nthe system functionality. OSAs must de8ine the time frames within which 8laws are identi8ied,\nreported, and corrected for all systems. OSAs should consider purchasing support from their\nvendors to ensure timely access to updates. Example\nYou know that software vendors typically release patches, service packs, hot 8ixes, etc. and\nwant to make sure your software is up to date. You develop a policy that requires checking\nvendor websites for 8law noti8ications every week [a]. The policy further requires that those\n8laws be assessed for severity and patched on end-user computers once each week and\nservers once each month [c,e]. Consistent with that policy, you con8igure the system to check\nfor updates weekly or daily depending on the criticality of the software [b,e].']","MATCH (e:`Endpoint`)
+WHERE e.job_id = '1420138f-ca4e-447e-8d3d-5d24289c69f5'
+RETURN e.`$$Name$$` AS Endpoint, e.`$$creationDate$$` AS CreationDate
+ORDER BY e.`$$creationDate$$` DESC
+LIMIT 20;","results': [{'Endpoint': 'CYM-19', 'CreationDate': '2024-11-21'}, {'Endpoint': 'CYM-11', 'CreationDate': '2024-11-21'}, {'Endpoint': 'CYM-5', 'CreationDate': '2024-11-21'}, {'Endpoint': 'CYM-17', 'CreationDate': '2024-11-21'}, {'Endpoint': 'CYM-13', 'CreationDate': '2024-11-21'}, {'Endpoint': 'CYM-9', 'CreationDate': '2024-11-21'}, {'Endpoint': 'CYM-20', 'CreationDate': '2024-11-21'}, {'Endpoint': 'CYM-2', 'CreationDate': '2024-11-21'}, {'Endpoint': 'CYM-12', 'CreationDate': '2024-11-21'}, {'Endpoint': 'CYM-6', 'CreationDate': '2024-11-21'}, {'Endpoint': 'CYM-16', 'CreationDate': '2024-11-21'}, {'Endpoint': 'CYM-14', 'CreationDate': '2024-11-21'}, {'Endpoint': 'CYM-8', 'CreationDate': '2024-11-21'}, {'Endpoint': 'CYM-18', 'CreationDate': '2024-11-21'}, {'Endpoint': 'CYM-4', 'CreationDate': '2024-11-21'}, {'Endpoint': 'CYM-10', 'CreationDate': '2024-11-21'}, {'Endpoint': 'CYM-1', 'CreationDate': '2024-11-21'}, {'Endpoint': 'CYM-3', 'CreationDate': '2024-11-21'}, {'Endpoint': 'CYM-7', 'CreationDate': '2024-11-21'}, {'Endpoint': 'CYM-15', 'CreationDate': '2024-11-21'}","The following endpoints are running out of date operating system patches:
+
+CYM-19
+CYM-11
+CYM-5
+CYM-17
+CYM-13
+CYM-9
+CYM-20
+CYM-2
+CYM-12
+CYM-6
+CYM-16
+CYM-14
+CYM-8
+CYM-18
+CYM-4
+CYM-10
+CYM-1
+CYM-3
+CYM-7
+CYM-15"
+"If I left CYM-19 and CYM-20's operating system unpatched, what risks according to CMMC would I have?","['226 NIST SP 800 171 Rev. 2, pp. 41-42. SI. L2-3. 14. 4 – Update Malicious Code Protec)on [CUI Data]\nTraditional malicious code protection mechanisms cannot always detect such code. In these\nsituations, organizations rely instead on other safeguards including secure coding practices,\ncon8iguration management and control, trusted procurement processes, and monitoring\ntechnologies to help ensure that software does not perform functions other than the\nfunctions intended. FURTHER DISCUSSION\nMalware changes on an hourly or daily basis, and it is important to update detection and\nprotection mechanisms frequently to maintain the effectiveness of the protection. Example\nYou have installed anti-malware software to protect a computer from malicious code.']","MATCH (f:`Firewall`)-[fs:`Sends Traffic to`]-(i:`Internet`)
+WHERE f.job_id = '1420138f-ca4e-447e-8d3d-5d24289c69f5'
+  AND toLower(f.`$$Name$$`) CONTAINS 'cym-19' 
+  OR toLower(f.`$$Name$$`) CONTAINS 'cym-20'
+RETURN 
+  f.`$$Name$$` AS `Firewall Name`,
+  f.`$$creationDate$$` AS `Firewall Creation Date`,
+  i.`$$Name$$` AS `Internet`",results': [],No answer

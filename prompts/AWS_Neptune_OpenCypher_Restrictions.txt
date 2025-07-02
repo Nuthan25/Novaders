@@ -1,0 +1,148 @@
+AWS Neptune OpenCypher Restrictions
+1.Subgraph Querying Limitations:
+Graph Traversal Restrictions: Neptune supports a subset of 
+OpenCypher for graph traversal but does not support all the 
+operations available in the Cypher specification (e.g., full support 
+for MATCH with arbitrary subgraph querying and complex 
+patterns).
+Path Finding Operations: Complex path-finding operations, such 
+as allShortestPaths(), shortestPath(), and other similar traversal 
+functions, are either partially supported or not optimized for 
+performance.
+2.Aggregation Restrictions:
+Limited Aggregation Functions: Aggregation operations like 
+count(), avg(), min(), max(), sum() are supported but are subject to 
+performance limitations on large datasets.
+No Support for DISTINCT with Aggregations: Some advanced 
+combinations of aggregation with DISTINCT and ordering may not 
+behave as expected or may not be supported.
+3.Property Keys:
+Limited Data Types: AWS Neptune enforces stricter data type 
+restrictions on property keys. For instance, the supported data 
+types for node or edge properties are limited to strings, numbers, 
+booleans, and timestamps.
+No Support for Arrays or Nested Structures: Neptune does not 
+support arrays or more complex nested structures (e.g., lists of 
+nodes or edges) as property values, which limits certain types of 
+graph modeling.
+4.Indexes and Performance Considerations:
+Limited Indexing Options: Indexing capabilities are restricted. You 
+can index properties of nodes and edges but not with the full 
+flexibility or customization options available in traditional relational 
+databases.
+No Indexes on Full-Text Search: Full-text search or indexing on 
+multi-property queries is not supported.
+5.Traversal Optimization:
+Traversal Limits: Traversals that involve deep or unbounded 
+recursion or iteration (e.g., cycles, loops, or very deep nested 
+queries) can severely impact performance or even fail to execute 
+on large datasets.
+Max Traversal Length: There may be limits on the number of hops 
+for a single traversal due to memory and processing constraints.
+6.Pattern Matching:
+Limited Support for Complex Pattern Matching: Certain complex 
+patterns involving multiple relationships or nodes (especially with 
+variable-length patterns) may not perform well or be fully 
+supported.
+7.No Wildcard Nodes: In some cases, wildcard nodes (?) or 
+arbitrary-length relationships are either unsupported or lead to 
+inefficient query execution.
+No Full JOIN Support:
+Unlike relational databases, OpenCypher in Neptune does not 
+support full JOIN operations across disjointed datasets. 
+Relationships between data must be explicitly defined in the graph 
+schema.
+8.Lack of Advanced Cypher Functions:
+Some advanced Cypher functions, such as WITH clause 
+optimizations and certain aggregate or grouping strategies, may 
+not be fully implemented or may exhibit performance issues when 
+dealing with large volumes of data.
+9.Transaction and Concurrency Control:
+Limited Transaction Support: While Neptune supports ACID 
+transactions, some Cypher queries may not function correctly or 
+optimally when used in highly concurrent environments, especially 
+with long-running or complex queries.
+10.Unsupported Clauses:
+No Support for 'MERGE' with Full Property Matching: The 
+MERGE operation in OpenCypher may have limitations regarding 
+property matching and is less flexible than in other graph 
+databases, particularly when merging nodes or relationships with 
+complex attributes.
+Unsupported Clauses in Cypher: Certain clauses such as 
+UNWIND and CALL for user-defined procedures are not supported.
+11.Lack of Full-text Search Integration:
+No Native Full-Text Search Integration: While Neptune can index 
+certain properties for quick lookup, it does not integrate with fulltext search engines natively for text-based search queries.
+12.No Custom Functions:
+No User-Defined Procedures: Unlike some graph databases, 
+AWS Neptune does not support user-defined procedures or 
+custom Cypher functions to extend the query language beyond its 
+predefined set.
+13.Graph Construction Limitations:
+Limitations in Graph Construction Queries: Some graph 
+construction capabilities are limited in Neptune, including 
+restrictions on certain types of graph creation and modification 
+operations involving high cardinality and dynamic property 
+additions.
+14.Missing Bi-directional Traversals:
+Bidirectional Traversal: While Neptune supports some graph 
+traversal functionality, bidirectional traversals may not be as 
+optimized or as straightforward as in other graph databases.
+15.Query Timeout and Memory Limits:
+Query Timeout Restrictions: Complex Cypher queries may be 
+subject to timeouts if the query execution exceeds specified 
+thresholds or consumes too much memory. Optimizing queries for 
+shorter paths and fewer hops is necessary to avoid timeouts.
+16.Unsupported Result Modifications:
+No Modifications of Results: Cypher queries in Neptune may not 
+support certain transformations of query results, such as directly 
+modifying or computing new data within the result set (e.g., 
+creating new nodes from query results within a single operation).
+17.Concurrency and Consistency:
+Lack of Immediate Consistency: Neptune uses eventual 
+consistency for some queries, which might lead to situations where 
+the results of a query could differ if run multiple times within a 
+short time window, especially in distributed environments.
+Math Function Limitations:
+AWS Neptune does not support all the mathematical functions available in the 
+full Cypher specification. Here are the key limitations:
+1.No Support for Complex Mathematical Operations:
+Functions such as pow(), log(), and more complex trigonometric or 
+exponential operations are not supported.
+2.Basic Math Functions:
+Supported Operations: You can perform basic arithmetic 
+operations such as +, -, *, /, and % for addition, subtraction, 
+multiplication, division, and modulus, respectively.
+3.Limited Rounding Functions:
+Functions like round() may have limited support or may not 
+function as expected across all data types, especially for floatingpoint operations.
+4.No Mathematical Constants:
+Mathematical constants like PI and E are not directly available for 
+use in queries.
+Date and Time Function Limitations:
+AWS Neptune has limited support for date and time functions in Cypher, 
+especially for advanced date manipulations. The following points highlight 
+these limitations:
+1.Date Parsing and Formatting:
+Basic Date Handling: You can use basic date and time functions 
+like date(), datetime(), duration(), timestamp(), etc., but more 
+advanced parsing and formatting may not be supported.
+2.Limited Date Functions:
+Lack of Advanced Date Operations: Operations like dateDiff(), 
+dateAdd(), dateTrunc() are either unsupported or limited in 
+functionality. Some versions of Neptune may not allow accurate 
+comparisons between date/time values.
+3.No Timezone Support:
+Timezone Handling: Timezone adjustments or conversions are not 
+directly supported. All time values are expected to be in UTC 
+without automatic conversion or time zone-specific formatting.
+4.No Date Arithmetic:
+Subtraction/Addition of Dates: While basic date arithmetic is 
+supported (subtracting durations from dates), more complex date 
+arithmetic operations, like subtracting one date from another to 
+get the difference in specific units (e.g., days, months), may not 
+function as expected.
+5.No Granular Time Units:
+For some functions, Neptune may not provide precision at the level 
+of milliseconds or microseconds, especially for timestamp 
+comparisons or date calculations.

@@ -1,0 +1,58 @@
+try:
+        if check_collection_exists(database, collection_id_question):
+            db_instance_schema = get_db_inst(database, collection_id, use_existing=True)
+            db_instance_question = get_db_inst(database, collection_id_question, use_existing=True)
+            question = data['question']
+            embed_data_question = get_embedding_data(question, db_instance_question)
+            logger.info(f"embed_data_question:-, {embed_data_question}")
+            if check_question(question, embed_data_question):
+                logger.info("Using Like Query")
+                queries = get_common_query(question, embed_data_question)
+                logger.info("**created LIKED Query**")
+            elif check_collection_exists(database, collection_id_files):
+                logger.info("using File data")
+                db_instance_schema = get_db_inst(database, collection_id, use_existing=True)
+                db_instance_file = get_db_inst(database, collection_id_files, use_existing=True)
+                question = data['question']
+                embed_data_file = get_embedding_data(question, db_instance_file)
+                logger.info(f"embed_data_files:-, {embed_data_file}")
+                chain = create_chain(db_instance_schema, question, job_id, embed_data_question, embed_data_file)
+                response = chain.invoke(question)
+                logger.info("**got DATA from Files**")
+            else:
+                logger.info("No Like Query")
+                db_instance_schema = get_db_inst(database, collection_id, use_existing=True)
+                question = data['question']
+                chain = create_chain(db_instance_schema, question, job_id, embed_data_question, embed_data_file)
+                response = chain.invoke(question)
+                logger.info("**No Liked query or files data**")
+        elif check_collection_exists(database, collection_id_files):
+                logger.info("using File data")
+                db_instance_schema = get_db_inst(database, collection_id, use_existing=True)
+                db_instance_file = get_db_inst(database, collection_id_files, use_existing=True)
+                question = data['question']
+                embed_data_file = get_embedding_data(question, db_instance_file)
+                logger.info(f"embed_data_files:-, {embed_data_file}")
+                chain = create_chain(db_instance_schema, question, job_id, embed_data_question, embed_data_file)
+                response = chain.invoke(question)
+                logger.info("**got DATA from Files**")
+        else:
+                logger.info("No Like Query")
+                db_instance_schema = get_db_inst(database, collection_id, use_existing=True)
+                question = data['question']
+                chain = create_chain(db_instance_schema, question, job_id, embed_data_question, embed_data_file)
+                response = chain.invoke(question)
+                logger.info("**No Liked query or files data**")
+
+        # Extract Cypher queries from the response
+        if 'response' in locals() and response and 'result' in response:
+            match_queries = re.findall(r'```cypher(.*?)```', response['result'], re.DOTALL)
+            queries = queries or "".join(match_queries)
+        else:
+            logger.warning("Response object is missing or malformed.")
+        logger.info(f"queries:--{queries}")
+        if not queries:
+            return {
+                'statusCode': 400,
+                'body': 'No Cypher queries found in the response.'
+            }

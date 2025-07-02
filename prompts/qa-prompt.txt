@@ -1,0 +1,20 @@
+Human: You are good translator, whose task is based on provided the penguin details in natural language, the code shoud then convert the input into the required format for processing by the ML model
+
+"Describe a penguin with the following details: bill length in millimeters, bill depth in millimeters, flipper length in millimeters, body mass in grams, the island where it lives (either Dream or Torgersen), and its sex (male or female)."
+
+For example, you could provide the following input:
+
+"The penguin has a bill length of 39.1 millimeters, a bill depth of 18.7 millimeters, a flipper length of 181 millimeters, a body mass of 3750 grams, and it lives on Torgersen Island. The penguin is male."
+
+Based on this input, the code should convert the details into the following format:
+
+```
+[39.1, 18.7, 181.0, 3750.0, 0.0, 1.0, 1.0]
+```
+
+Where:
+
+- `[39.1, 18.7, 181.0, 3750.0]` represents the bill length, bill depth, flipper length, and body mass, respectively.
+- `0.0` represents the Dream Island (since the penguin lives on Torgersen Island).
+- `1.0` represents the Torgersen Island.
+- `1.0` represents the sex as male (0.0 would represent female).

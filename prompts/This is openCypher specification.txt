@@ -1,0 +1,120 @@
+This is openCypher specification compliance in Amazon Neptune
+## Supported Features in Amazon Neptune openCypher
+1. Clauses:
+- MATCH (except for shortestPath() and allShortestPaths())
+- OPTIONAL MATCH
+- RETURN (except when used with non-static values for SKIP or LIMIT)
+- WITH (except when used with non-static values for SKIP or LIMIT)
+- UNWIND
+- WHERE
+- ORDER BY
+- SKIP
+- LIMIT
+- CREATE (with support for custom ID values)
+- DELETE
+- SET
+- REMOVE
+- MERGE (with support for custom ID values)
+- UNION, UNION ALL (read-only queries only)
+- USING (from engine version 1.3.2.0)
+---
+2. Operators:
+- General Operators:
+  - DISTINCT
+  - . (for accessing properties in a nested literal map)
+- Mathematical Operators:
+  - +, -, *, /, % (modulo)
+- Comparison Operators:
+  - =, <>, <, >, <=, >=
+  - IS NULL, IS NOT NULL
+  - STARTS WITH, ENDS WITH, CONTAINS (for string comparisons)
+- Boolean Operators:
+  - AND, OR, XOR, NOT
+- String and List Operators:
+  - + (concatenation)
+  - IN (for list containment checks)
+---
+3. Expressions:
+- CASE
+- Accessing Literal Maps: Supported using the . operator.
+- Unsupported: Dynamic property key access using []
+---
+4. Functions:
+- Predicate Functions:
+  - exists()
+- Scalar Functions:
+  - coalesce(), endNode(), epochMillis(), head(), id(), last()
+  - length(), randomUUID(), properties(), removeKeyFromMap
+  - size(), startNode(), timestamp(), toBoolean(), toFloat(), toInteger()
+  - type()
+- Aggregating Functions:
+  - avg(), collect(), count(), max(), min()
+  - percentileDisc(), stDev(), percentileCont(), stDevP(), sum()
+- List Functions:
+  - join(), keys(), labels(), nodes(), range(), relationships(), reverse(), tail()
+- Mathematical Functions:
+  - Numeric: abs(), ceil(), floor(), rand(), round(), sign()
+  - Logarithmic: e(), exp(), log(), log10(), sqrt()
+  - Trigonometric: acos(), asin(), atan(), atan2(), cos(), cot(), degrees(), pi(), radians(), sin(), tan()
+- String Functions:
+  - join(), left(), lTrim(), replace(), reverse(), right()
+  - rTrim(), split(), substring(), toLower(), toString(), toUpper(), trim()
+---
+5. Temporal Support (Engine 1.3.2.0 and above):
+- DateTime Parsing:
+  - datetime() with ISO8601 support and parsing from string literals.
+  - Support for milliseconds precision and conversion using epochMillis().
+---
+6. Miscellaneous:
+- Node and Relationship IDs: Represented as strings.
+- Multi-valued Properties: Supported but results may be non-deterministic.
+---
+## Unsupported Features in Amazon Neptune openCypher
+1. Clauses:
+- MANDATORY MATCH
+- CALL [YIELD...] (procedure calls)
+- Mutation Queries: Not supported for UNION and UNION ALL.
+---
+2. Operators:
+- Mathematical Operator: ^ (exponentiation)
+- Comparison: <, >, <=, >= not supported for Path, List, or Map types.
+---
+3. Expressions:
+- Dynamic Property Access: Using the [] operator is not supported.  
+   Example that fails:
+   ```
+   MATCH (n)
+   RETURN n["name"]
+   ```
+---
+4. Functions:
+- User-defined Functions (UDFs): Not supported.
+- Date Arithmetic (Except epochMillis()):
+   - Adding or subtracting datetime values directly is unsupported.
+   - Example that fails:
+     ```
+     RETURN datetime() - datetime()
+     ```
+- WINDOW Functions: (like SUM() OVER()) are not supported.
+- Advanced Date Handling: Only basic parsing and conversion are supported.
+---
+5. Temporal Limitations (Before Engine 1.3.2.0):
+- No support for parsing milliseconds.
+- Limited ISO8601 date formats.
+- No support for dynamic datetime parsing.
+---
+6. Variable-Length Path (VLP) Limitations:
+- Only constant values are supported for property equality filters in variable-length paths.
+- Example that fails:
+   ```
+   MATCH (x)-[:route*1..2 {dist: 33, code: x.name}]->(y)
+   RETURN x, y
+   ```
+---
+### Key Workarounds:
+- Use epochMillis() for date differences.
+- Avoid dynamic property key access ([]).
+- For date differences, subtract epochMillis() values.
+---
+The specification ends here.
+The Cypher query should be constructed based on the provided input.
