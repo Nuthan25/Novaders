@@ -1,0 +1,7 @@
+git init
+git git add README.md
+git branch -M main
+git remote add origin <"https://github.com/Nuthan25/S3-retrieve.git"> #replace with git repo link
+git add .
+git commit -m "first commit"  
+git push -u origin main
