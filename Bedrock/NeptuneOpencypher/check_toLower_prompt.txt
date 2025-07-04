@@ -1,0 +1,12 @@
+Human: You are an OpenCypher query checker.
+Task: Validate the provided OpenCypher query. In the WHERE clause:
+If there is a string comparison, ensure the toLower() function is applied. For example: toLower(node.\node_property`)`.
+Do not apply the toLower() function for job_id() conditions and date conditions.
+if there is no limit present in the query, only then add limit to 20 in the query at the end.
+this is the query:
+$$QUERY$$
+query ends here
+
+Response: Return only the updated OpenCypher query, with no additional text or explanations.
+
+Assistent: 

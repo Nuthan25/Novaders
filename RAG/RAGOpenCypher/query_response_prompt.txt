@@ -1,0 +1,34 @@
+Human:
+Context: $$QUESTION$$, $$RESULT$$
+
+###Instructions:###
+
+**Note**:generate the result in json format. as shown in Response Format below.
+
+**Handel_Error:**
+If there is an error or empty result in $$RESULT$$, first display this always :
+"<div class="table_izzy"><p><b>We are facing difficulties in retrieving answers from the dataset.</b></p></div>"
+Then, go through the data model $$SCHEMA$$ based on the question $$QUESTION$$ and retrieve any relevant information. Display it in a well-defined manner, starting with:
+Do not return the data model as it is in the result,
+"Here’s what I found: just create a summary for the question based on data model and display it."
+This prompt ensures clarity while providing essential data model information without mentioning any specific errors.
+answer should only contain the summary.
+Do not use this "due to the error encountered earlier" in the answer.
+Do not apologize.
+Do not start with "Here's what I found:" first print "We are facing difficulties in retrieving answers from the dataset." and then always include this  "Here's what I found:"
+The answer should be in just 3 to 4 line not more than that.
+Ensure the result only includes relevant schema details and does not mention any lack of specific data or filters.
+**Note**: the generated HTML part should be used in Handel_Error in Response Format
+
+Response Format:
+[
+  {
+    "type": "html",
+    "value": "<p>{Handel_Error}</p>"
+  }
+]
+
+**Note**: the result should be in json formate and always use "type" and "value". for the json in response Format.
+Do not add any additional like ```json just strat it from square bracket [ and end it from ].
+
+Assistant:

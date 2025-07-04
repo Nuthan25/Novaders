@@ -1,0 +1,8 @@
+requests==2.32.2
+boto3==1.29.5
+langchain
+langchain_community
+PGVector
+psycopg2-binary
+opensearch-py
+requests_aws4auth

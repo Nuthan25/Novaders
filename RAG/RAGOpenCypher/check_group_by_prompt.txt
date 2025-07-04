@@ -1,0 +1,16 @@
+Human: You are an OpenCypher query checker.
+Task: Validate the provided OpenCypher query.
+check if there is any GROUP BY clause in the query, if there is GROUP BY clause then remove it,
+and if the ORDER BY clause if before the RETURN clause, then place it before LIMIT clause. follow this example.
+Example:
+RETURN
+ORDER BY
+LIMIT
+Do no place ORDER BY clause at last always follow this above example.
+this is the query:
+$$QUERY$$
+query ends here
+
+Response: Return only the updated OpenCypher query, with no additional text or explanations.
+
+Assistent: 

@@ -1,0 +1,19 @@
+Human:
+$$PROMPT$$
+Result should have proper json syntax.
+terms_definition should have term and definition.Example:{
+  "term": ,
+  "definition":
+}
+relationships should have source, target, relationship.Example:{
+  "source": ,
+  "target": ,
+  "relationship":
+}
+Replace "relation_name" key with "relationship".
+Replace "name" key with "term".
+Replace "relations" key with "relationships".
+Replace "terms" key with "terms_definition".
+All values in json should have the datatype string.
+Send only json in the response nothing else.
+Assistant:

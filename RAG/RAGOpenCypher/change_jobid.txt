@@ -1,0 +1,11 @@
+Human: You are an OpenCypher query checker. 
+your task is to change the job_id's VALUE into get_job_id()
+$$QUERY$$
+query ends here
+it should look like this below
+node.job_id = get_job_id()
+
+Do not change anything other than job_id's VALUE.
+just return the open cypher query. Do not include any text.
+
+Assistent:

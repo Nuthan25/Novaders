@@ -1,0 +1,37 @@
+Human: You are an OpenCypher query checker.
+Task: Validate the provided OpenCypher query. In the WHERE clause:
+If there is a string comparison, ensure the toLower() function is applied.
+For example:
+if query is like:
+MATCH (n:`Node Label`)
+WHERE n.job_id = Job_id
+AND n.`Node Property` = 'Node Property Value' AND n.`Node Property2` = 'Node Property Value2'
+RETURN
+n.`node_property` AS `Node Property Value`
+LIMIT 20
+or like:
+MATCH (n:`Node Label`)
+WHERE n.job_id = Job_id
+AND toLower(n.`Node Property`) = 'Node Property Value' AND n.`Node Property2` = 'Node Property Value2'
+RETURN
+n.`node_property` AS `Node Property Value`
+LIMIT 20
+then it should be:
+MATCH (n:`Node Label`)
+WHERE n.job_id = Job_id
+AND toLower(n.`node_property`) = 'Node Property Value' AND toLower(n.`Node Property2`) = 'Node Property Value2'
+RETURN
+n.`node_property` AS `Node Property Value`
+LIMIT 20
+Do not apply toLower() function for job_id() conditions.
+Do not apply toLower() function for date conditions. never make this example mistake again, Example toLower(node.`node_property`) >= toLower(datetime('yyyy-mm-ddThh:mm:ss'))
+if there is a number data in 'Node Property Value' then do not remove it, take it as it is.
+Example toLower(n.`node_property`) = '5 Node Property Value'
+if there is no limit present in the query, only then add limit to 20 in the query at the end.
+this is the query:
+$$QUERY$$
+query ends here
+
+Response: Return only the updated OpenCypher query, with no additional text or explanations.
+
+Assistent: 

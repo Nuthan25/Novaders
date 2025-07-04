@@ -1,0 +1,84 @@
+Important Note:
+JOB_ID: always add node.job_id = '$$ID$$' in WHERE clause for every query generated, job_id and value should not be missed in query, Ensure job_id is not placed after the RETURN statement or any subsequent part of the query.
+BACKTIC:always add ` ` Backtic to Node Label and Edge Label, and node property of `$$Name$$`, don't add backtick to job_id.
+DATE: When you use of datetime, Always use datetime('2023-01-01T00:00:00'), but don't use datetime(w.`date property`), For any queries involving a "between" condition, ensure the WHERE clause includes both a starting and ending time. The datetime comparison should use this format: AND wo.`date property` >= datetime('YYYY-MM-DDTHH:MM:SS') AND wo.`date property` <= datetime('YYYY-MM-DDTHH:MM:SS'), For questions involving "after" or "before," the comparison should include all dates from the mentioned date onward or backward, respectively. date property are present inside Node properties. always consider date, not year or month.
+Single MATCH Clause: Always combine multiple relationships in a single MATCH clause. The relationships should flow naturally from one node to another, without breaking them into separate MATCH clauses.Always ensure that the relationships in a query are part of the same MATCH chain, wherever logically possible. Avoid creating new MATCH clauses for related nodes unless absolutely necessary.
+For example:
+Correct:
+MATCH (nodeLabel1:`Label1`)-[relationshipType1:`TYPE1`]-(nodeLabel2:`Label2`)-[relationshipType2:`TYPE2`]-(nodeLabel3:`Label3`)-[relationshipType3:`TYPE3`]-(nodeLabel4:`Label4`)
+MATCH (nodeLabel2)-[relationshipType4:`TYPE4`]-(nodeLabel5:`Label5`)-[relationshipType5:`TYPE5`]-(nodeLabel6:`Label6`)
+Incorrect:
+MATCH (nodeLabel1:`Label1`)-[relationshipType1:`TYPE1`]-(nodeLabel2:`Label2`)-[relationshipType2:`TYPE2`]-(nodeLabel3:`Label3`)-[relationshipType3:`TYPE3`]-(nodeLabel4:`Label4`)
+MATCH (nodeLabel2:`Label2`)-[relationshipType4:`TYPE4`]-(nodeLabel5:`Label5`)-[relationshipType5:`TYPE5`]-(nodeLabel6:`Label6`)
+VARIABLE: When generating Cypher queries, ensure that each variable has a unique name based on its role (either as a node or a relationship). Avoid reusing the same variable name for both nodes and relationships, as this will cause a type mismatch error. For example: If you define a node as (o:`Order`), do not reuse o` as a relationship variable in the same query. Always use distinct and descriptive variable names for nodes and relationships. always create veriable for nodes and egdes
+VARIABLE: always include variable for each and every Node label and Edge label.
+RETURN: When generating Cypher queries, always create descriptive aliases for returned properties. Use the following format for aliasing: Return properties with the pattern: nodeLabel.`Node Property` AS `Alias Name`,For example, if returning the `$$Name$$` property of a `Product` node, alias it as Product Name. Make sure to follow this pattern consistently for all returned values. Also avoid recalculating expressions in the RETURN clause. Use the aliases defined in the WITH clause instead of repeating the logic in the RETURN clause.
+WHERE Clause Placement: Always place the WHERE clause directly after the first MATCH statement. Include all conditions and job_id within the same WHERE clause. For example, ensure that conditions for job_id are not repeated or split across different WHERE clauses, Do not generate multiple WHERE clauses for the same query. Combine all necessary conditions into one unified WHERE clause following the first MATCH clause. also When Comparing with Node Name always use aliase.`$$Name$$` and when comparing with Node property always use aliase.`Node Property`, do not use both at once like aliase.`Node Property`.`$$Name$$`. Do not add match relatonship in where clause.
+TOLOWER:For any OpenCypher query involving string comparisons, always apply toLower(node.`Node Property Name`) to both the node property and the comparison string. This ensures consistent case-insensitive behavior. For all string data, such as `$$Name$$`, `status` or other text properties, use the following formats:
+Here are examples:
+MATCH (c:`Customer`)
+WHERE toLower(c.`$$Name$$`) CONTAINS 'searchString'
+Make sure to include toLower(node.`Node Property Name`) every time you use CONTAINS or = with string data to enforce case-insensitive matching. This formatting is required for every string property in the query.
+ROUND: Do not apply rounding to any values in the query. Simply return the values as they are, and do not specify decimal places in the query.
+PERCENT: When calculating percentage, conditions regarding job_ship_qty should be used in "With" clause. Do not add job_ship_qty compare in where clause.Always use COUNT(w) for the total count, and COUNT(CASE WHEN ...) for conditional counts, and perform percentage calculations with toFloat() inside the same WITH clause.
+Example:
+MATCH (nodeLabel1:`Label1`)
+WHERE nodeLabel1.job_id = 'Value'
+  AND nodeLabel1.`date_node_property` >= datetime('2024-01-01T00:00:00')
+  AND nodeLabel1.`date_node_property` <= datetime('2024-12-31T23:59:59')
+WITH
+  COUNT(CASE WHEN nodeLabel1.`job_ship_qty` > 4 THEN 1 END) AS jobs_gt_4,
+  COUNT(nodeLabel1) AS total_jobs
+RETURN
+  toFloat(jobs_gt_4) / toFloat(total_jobs) * 100 AS percentage_jobs_gt_4;
+BOOLEAN: If the type of Node property is BOOLEAN then do to take that inside the toLower() function.
+Example:
+$$Name$$ as type STRING, Here the type is STRING, so we need to take 'Node property' inside the toLower() function.
+MATCH (n:`Node`)
+WHERE toLower(n.`$$Name$$`) CONTAINS 'Node Property Value'
+`Node Property` as type BOOLEAN, here the type is BOOLEAN, so we don't have to take 'Node property' inside the toLower() function.
+MATCH (n:`Node`)
+WHERE n.`Node Property` CONTAINS 'Node Property Value'
+WITH Clause: Always use these types of conditions such as node.node_property = value or node.node_property < value in the WITH clause for counting or conditional expressions, Do not include these types of conditions in the WHERE clause. Correct Example: WITH COUNT(CASE WHEN nodeLabel1.`job_ship_qty` < 6 THEN 1 END) or COUNT(CASE WHEN nodeLabel1.`job_ship_qty` = 1 THEN 1 END) Incorrect Example: WHERE nodeLabel1.`job_ship_qty` = 1 or AND nodeLabel1.`job_ship_qty` < 6
+USE_IT: Ensure that any text inside double quotes " ", such as customer names or other identifiers, is used exactly as it appears, including capitalization and spacing, when generating the query. The generated query should not modify or alter the content inside the double quotes in any way.
+GROUP BY: When generating Cypher queries, do not use the GROUP BY clause. Instead, achieve grouping by using the WITH clause to specify the grouping keys and any aggregation functions. The WITH clause should be used to pass the grouped data to subsequent parts of the query.
+EDGES AND NODE: when there is a question related to total number of Nodes or Edges, always create a query to count the number of Nodes or Edges from data set using job_id Example: MATCH (n) WHERE n.job_id = ' '  RETURN count(n) AS total_nodes; or MATCH ()-[r]-() WHERE r.job_id = ' ' RETURN COUNT(r) AS total_edges;
+PERCENTAGE: When calculating the percentage, avoid using any conditional checks inside the `WHERE` clause. Always use AS properly for the result,
+CONTAINS: When performing a condition check in the WHERE clause for STRING data, always use CONTAINS.
+RETURN: When writing Cypher queries, avoid recalculating expressions in the RETURN clause. Use the aliases defined in the WITH clause instead of repeating the logic in the RETURN clause. This ensures the query remains efficient and avoids redundant computations.
+GROUP BY: while generating the query never use GROUP BY Clause.
+DATE: if date is mentioned in the question, then always include it while generating the query.
+ToLower: always include toLower() function in WHERE clause for string comparison
+Creation Date: never use this $$creationDate$$ while generating any cypher query. it's not a property of any node or edges.
+Union: Generate a Cypher query based on the provided question and schema details. Ensure the following guidelines are strictly followed when using `UNION`:
+- Variable Scope: Each query part in a `UNION` clause must be self-contained. Avoid relying on variables defined outside the current query block.
+- Independent Aggregations: If aggregations (like `SUM`) are performed before a `UNION`, repeat the calculation separately in each `RETURN` block or explicitly propagate variables using a preceding `WITH`.
+- Avoid Implicit Dependencies: Ensure each `MATCH` and `WITH` block defines all necessary variables for its corresponding `RETURN`.
+- Backticks and Case Sensitivity: Use backticks for all node labels, relationship types, and properties. Cypher queries should be case-insensitive when handling string comparisons.
+- Single MATCH Clause: Keep a single `MATCH` clause for the entire query unless a repeated search is necessary for each `UNION` segment.
+- Example Structure:
+ ```cypher
+  MATCH (n:`Node`)
+  WHERE n.prop = $value
+  WITH SUM(n.amount) AS total_amount
+  RETURN 'Type A' AS `Label`, total_amount
+  UNION
+  MATCH (n:`Node`)
+  WHERE n.prop = $value
+  WITH SUM(n.amount) AS total_amount
+  RETURN 'Type B' AS `Label`, total_amount
+  ```
+- Error Prevention: Ensure variables used in the `RETURN` statement are either defined within the same `WITH` clause or recalculated in each segment.
+- Consistency: Use consistent aliases, calculations, and ordering in all parts of the query.
+Do not use SQL-style window functions (OVER ()). Using OVER () is not valid in Cypher.
+if there is Frequency in question, do not calculate percentage for it.
+Represents the total occurrences of an event within each category (e.g., time periods, locations, types).
+It is a raw count without any normalization.
+Example:
+Category A: 150 occurrences
+Category B: 120 occurrences
+Category C: 80 occurrences
+when you use WITH, it limits the scope of accessible variables. Any filtering must be before or within the WITH clause.
+Make use of COALESCE() function, to Prevents NULL values in queries. Do not use "CASE WHEN aliases IS NOT NULL THEN...." when using COALESCE() function.
+If the node already has a Year or Month property, use that instead of extracting it from the full date.
+Name: If a node contains a property named "Name," "[node]_Name," or "[node]Name," always consider those as the name property. Do not consider `$$Name$$` as the name property. Otherwise, use the property mentioned below.

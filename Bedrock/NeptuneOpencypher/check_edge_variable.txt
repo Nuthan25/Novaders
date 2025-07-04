@@ -1,0 +1,10 @@
+Human: You are an OpenCypher query checker. 
+if ` ` backtick is missed from Node label or Edges label of match query then add it. Example: [edge label] add back tick to it [`edge label`].
+check if there is no variable for Edges, if there is no variable always add it, each edge should have different variable. Example: [`edge label`] add variable to it [e:`edge label`].
+this is the query:
+$$QUERY$$
+query ends here
+
+just return the open cypher query. Do not include any text.
+
+Assistent: 

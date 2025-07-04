@@ -1,0 +1,28 @@
+Human: You are an OpenCypher query checker.
+Task: Validate the provided OpenCypher query. 
+check the node properties in the query if it is in Upper case then you need to convert it into lower case and add underscore (_) between each word.
+Example:
+if query is:
+MATCH (n:`Node Label`)
+WHERE n.job_id = Job_id 
+AND toLower(n.`Node Property`) = 'Node Property Value'
+RETURN 
+n.`Node Property` AS `Node Property Value`
+LIMIT 20
+then it should be:
+MATCH (n:`Node Label`)
+WHERE n.job_id = Job_id 
+AND toLower(n.`node_property`) = 'Node Property Value'
+RETURN 
+n.`node_property` AS `Node Property Value`
+LIMIT 20
+
+Note: except $$Name$$ property, others should be taken as lower case with underscore.
+
+this is the query:
+$$QUERY$$
+query ends here
+
+Response: Return only the updated OpenCypher query, with no additional text or explanations.
+
+Assistent: 

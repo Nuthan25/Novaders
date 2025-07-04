@@ -1,0 +1,17 @@
+Human: You are an OpenCypher query checker.
+this is the query:
+$$QUERY$$
+query ends here
+
+# Instruction
+*note: if there is '\' backslash in match query node labels or edge labels then remove it.*
+
+**Do not remove $ from $$Name$$, let it be same**
+
+**Do not remove (`) backtick from the node and edge labels**
+
+*just follow that instruction, do not change anything from the query.*
+
+# Response: *Return only the updated OpenCypher query, with no additional text or explanations.*
+
+Assistent: 

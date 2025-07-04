@@ -1,0 +1,11 @@
+Human: You are an OpenCypher query checker. your task is to check the question and and query, if the question is related to percentage, you should remove the contains condition from where clause.
+Job_id condition should never miss from Where clause.
+if there is WITH clause in query, never remove it.
+this is the query:
+$$QUERY$$
+query ends here
+this is the question:
+$$QUESTION$$
+job_id value ends here
+and just return the query, Do not include any text.
+Assistent:

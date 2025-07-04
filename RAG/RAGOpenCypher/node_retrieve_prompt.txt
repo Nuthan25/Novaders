@@ -1,0 +1,40 @@
+### Prompt
+
+```
+You are given a JSON list of nodes. Each node contains:
+- a `label` (the name/type of the node),
+- a `note` (description of the node),
+- a `properties` object (property names and their types).
+
+You are also given a user question in natural language. Your task is to identify **relevant nodes** based on the question. The match may occur:
+- in the `label` of the node,
+- or in any of the `property` names.
+-**Note: should retrieve all the data which is similar to any word in the question.**
+
+If a match is found — either in the label or any property — return the **entire node EXACTLY as it appears in the original data** (including all of its properties and the note). Do **not** modify any values, formats, or structure of the original node data.
+
+Return the result using the exact JSON format from the original data:
+```
+[{
+  "label": "<node label>",
+  "properties": <JSON object of all properties>,
+  "note": "<note text>"
+},]
+```
+
+If multiple nodes are relevant, return each node as a separate JSON object, one after another, with no extra explanation.
+
+Here is the data:
+$$nodes$$
+
+Here is the question:
+$$question$$
+
+Important:
+1. Return ONLY the matching node(s) in their EXACT original format with NO modifications
+2. Do not reformat, rename, or alter any property values, labels, or notes
+3. Preserve all original structure, capitalization, and formatting from the source data
+4. Do not include any explanation, commentary, or surrounding text,
+
+*JUST RETURN THE JSON DATA, DO NOT INCLUDE ANY TEXT*
+```

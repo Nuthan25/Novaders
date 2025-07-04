@@ -1,0 +1,36 @@
+Human: Context - $$QUESTION$$ and $$RESULT$$
+First, go through the note document provided below, then generate the response:
+- $$NOTE$$
+Note: Respond strictly based on the information provided. Do not use any internal knowledge or external assumptions.
+Act as a web developer to create answers based on the complete result $$RESULT$$ of the question $$QUESTION$$ using HTML.
+Write an introductory text about only the $$QUESTION$$ within `<p></p>` tags, and place everything inside a `<div>` tag. If there is only a single value in the result, it should be enclosed within `<div class="table_izzy"><p></p></div>` with the introductory text.
+If there are multiple values, enclose them within `<div class="table_izzy"><ol><li></li></ol></div>`, separating each value with `<li></li>`.
+The provided result is authoritative, and you must never doubt it or try to use your internal knowledge to correct it.
+Just return everything from the results that is present inside context in a well-defined manner.
+Do not provide any extra information not mentioned in $$RESULT$$ or $$QUESTION$$.
+Do not mention any of the prompts in the answer.
+**If the note contains any data mapping or replacement rules, always apply these rules when processing the data.
+    Mapping Rule Format:
+        Do not reverse or re-replace values that are already using the replacement value (i.e., if the data already contains the right-side value, leave it as-is).**
+        In the note, mappings will be defined as:
+        Left side = value from the dataset
+        Right side = replacement value to be shown in the result.
+    Replacement Rules:
+        If a value in the dataset matches a left-side value from the note, replace it with the corresponding right-side value in the final result.
+While generating the answer, maintain some context based on the question $$QUESTION$$.
+Under any circumstances, do not mention that you do not have enough context or relevant information.
+Do not provide apologies.
+Do not mention that information is not provided or relevant details are not provided.
+Do not mention result or context in the answer.
+Whenever there's a question $$QUESTION$$ related to 'percentage', strictly do not change or modify the result, just print the result's value as it is. Do not show the value% in the answer.
+Ensure that all property values, except for IDs, such as quality, sales, and revenue, are formatted according to United States standards.
+If dates are mentioned in the result, convert them to United States date format (MM/DD/YYYY).
+- Convert dates in $$RESULT$$ to **United States date format (MM/DD/YYYY)**.
+  - Example:
+    - Input Date: `2022/08/03` (YYYY/MM/DD)
+    - Output Date: `August 3, 2022` (Month Day, Year)
+    - Do not swap the month and day incorrectly.
+This ensures that all content remains within a single `<div class="table_izzy">` tag, regardless of the number of values.
+Whenever there's a question $$QUESTION$$ related to 'count' or 'total number', strictly remove the decimal point and display it.
+If a contribution is mentioned in the question, display the data exactly as it is, without adding terms like "millions" or any other modifications.
+Assistant:

@@ -1,0 +1,19 @@
+# AWS Neptune OpenCypher Restrictions
+
+When generating Cypher queries for Neptune:
+
+- Limited pattern matching and traversal support
+- No complex path functions (shortestPath(), allShortestPaths())
+- Basic aggregations only (count, avg, min, max, sum)
+- No arrays or nested structures as property values
+- Limited indexing capabilities, no full-text search
+- Avoid deep/unbounded recursion or very complex patterns
+- No MERGE with full property matching
+- No UNWIND or CALL clauses
+- No user-defined procedures or custom functions
+- Unsupported: BETWEEN clause
+- Avoid duration() function
+- Available date/time functions: datetime(), timestamp(), epochmillis()
+- Only basic arithmetic operations (+, -, *, /, %)
+- Limited date manipulation capabilities
+- All times in UTC without timezone support

@@ -1,0 +1,113 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Description: 'RAG OpenCypher'
+Transform: AWS::Serverless-2016-10-31
+
+Metadata:
+   AWS::CloudFormation::Interface:
+     ParameterGroups:
+       -
+         Label:
+           default: "Tags"
+         Parameters:
+           - Env
+
+Parameters:
+
+ # Enviornment type
+  Env:
+    Description:    Please specify the Environment dev/test/prod.
+    Type:           String
+
+
+  pythonversion:
+    Description:    Please specify the python version that will be used in all the lambda runtime.
+    Type:           String
+    Default: python3.9
+
+Resources:
+  RAGOpenCypherlambda:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Description: 'opencypher-rag'
+      FunctionName: !Sub '${Env}-opencypher-rag'
+      CodeUri: RAGOpenCypher/
+      Handler: app.lambda_handler
+      Runtime: !Ref pythonversion
+      MemorySize: 1024
+      Timeout: 720
+      Environment:
+        Variables:
+            DB_HOST: !Sub
+              - '{{resolve:ssm:/${Env}/aurora-rds/address/endpoint}}'
+              - Env: !Ref Env
+            DB_USER : !Sub
+              - '{{resolve:ssm:/${Env}/rds/username}}'
+              - Env: !Ref Env
+            DB_PASSWORD: !Sub
+              - '{{resolve:ssm:/${Env}/rds/masteruser/password}}'
+              - Env: !Ref Env
+            DB_PORT: '5432'
+            DISPATCHER_QUEUE_URL: !Sub
+              - '{{resolve:ssm:/${Env}/cymonix/sqs/dispatcher_fifo_queue/url}}'
+              - Env: !Ref Env
+            MODEL_ID: "us.anthropic.claude-3-7-sonnet-20250219-v1:0"
+            MODEL_ID_HQ: "anthropic.claude-3-haiku-20240307-v1:0"
+            AWSREGION: !Sub "${AWS::Region}"
+            DB_HOST_AOSS: "https://3tv6hfs4qp9pwxybq9fa.us-west-2.aoss.amazonaws.com"
+            DB_PORT_AOSS: '443'
+            JOB_ID: "['d202ae52-e94f-44f9-966c-51345f14071b','29d422f3-5c70-44ec-8de4-1c39a83287b3']"
+            ENV: !Sub '${Env}'
+            INDEX: !Sub '${Env}_index'
+            QUEUE_NAME: !Sub
+              - '{{resolve:ssm:/${Env}/cymonix/sqs/error_fifo_queue/name}}'
+              - Env: !Ref Env
+      VpcConfig:
+         SecurityGroupIds:
+             - !Sub
+               - '{{resolve:ssm:/${Env}/lambda-graph/sec-grp}}'
+               - Env: !Ref Env
+         SubnetIds:
+             - !Sub
+               - '{{resolve:ssm:/${Env}/subnet/privatesubnet1}}'
+               - Env: !Ref Env
+             - !Sub
+               - '{{resolve:ssm:/${Env}/subnet/privatesubnet2}}'
+               - Env: !Ref Env
+      Layers:
+        - !Sub '{{resolve:ssm:/${Env}/layers/arn/error_handler}}'
+      Policies:
+        - AmazonSQSFullAccess
+        - AWSLambdaRole
+        - AmazonS3FullAccess
+        - AWSLambda_FullAccess
+        - AmazonRDSFullAccess
+        - AmazonMachineLearningFullAccess
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'events:PutEvents'
+              Resource: !Sub "arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/${Env}-bedrock-bus"
+        - Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Action:
+                - 'bedrock:InvokeModel'
+                - 'bedrock:InvokeModelWithResponseStream'
+              Resource: "*"
+#                 - "arn:aws:bedrock:us-west-2::foundation-model/anthropic.claude-3-haiku-20240307-v1:0"
+#                 - "arn:aws:bedrock:us-west-2::foundation-model/amazon.titan-embed-text-v1"
+      Tags:
+         Name: !Sub '${Env}-opencypher-rag'
+         Env: !Sub '${Env}'
+
+
+#  AuditNotifierEventSourceMapping:
+#     Type: AWS::Lambda::EventSourceMapping
+#     Properties:
+#       BatchSize: 1
+#       Enabled: true
+#       EventSourceArn: !Sub
+#         - '{{resolve:ssm:/${Env}/cymonix/sqs/audit_notifier_fifo_queue/arn}}'
+#         - Env: !Ref Env
+#       FunctionName: !GetAtt AuditNotifierlambda.Arn

@@ -1,0 +1,11 @@
+requests==2.32.2
+boto3
+botocore
+langchain
+langchain_community
+langchain_aws
+PGVector
+psycopg2-binary
+tiktoken
+opensearch-py
+requests_aws4auth

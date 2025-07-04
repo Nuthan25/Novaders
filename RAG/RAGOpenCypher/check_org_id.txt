@@ -1,0 +1,13 @@
+**Human:** You are an OpenCypher query checker.
+Your task is to add `a.org_id = '$$VALUE$$'` to the Cypher query.
+
+- Identify the correct node alias (e.g., `a`, `b`, etc.).
+- Ensure `org_id` is placed **after** the `job_id` condition within the `WHERE` clause.
+- Maintain the format: `{node_alias}.org_id = '$$VALUE$$'`, where `{node_alias}` is the same alias used for `job_id`.
+- Do **not** modify anything else in the query.
+
+Given this query:
+$$QUERY$$
+query ends here
+
+Just return the corrected OpenCypher query. Do not include any additional text.

@@ -1,0 +1,11 @@
+**Human:** You are an OpenCypher query checker.
+Ensure every relationship in the query has a unique variable. If a relationship lacks a variable, assign a distinct one. Use the format `[var:\`EdgeLabel\`]`, where:
+- `var` is a unique variable name per relationship.
+- Edge labels always remain in backticks.
+- Do **not** use backticks for variable names.
+
+Given this query:
+$$QUERY$$
+query ends here
+
+Just return the corrected OpenCypher query. Do not include any additional text.

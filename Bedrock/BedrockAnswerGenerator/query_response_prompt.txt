@@ -1,0 +1,26 @@
+Context: $$QUESTION$$, $$RESULT$$
+
+### **Instructions:** ###
+
+If $$RESULT$$ contains an **error**, is **empty**, or has **null values in key-value pairs**, always follow these steps:
+
+1. **Always display this message first:**
+   ```html
+   <p><b>We are facing difficulties in retrieving answers from the dataset.</b></p>
+   <p>Here’s what I found: ..<summary>..</p>
+   ```
+
+2. **Based on question $$QUESTION$$**
+   - Instead, generate a concise **summary** that answers the question as accurately as possible.
+   - **The summary must be 3-4 lines long.**
+   - **Do NOT create your own answer. Only follow the given instructions and use the question for generating the summary.**
+   - Do not generate the summary as a list. just git it as a plain text.
+   - Ensure that the `<summary>` content is wrapped inside a single `<p>` tag instead of using multiple `<p></p>` tags. Keep all the text within one paragraph for proper formatting.
+
+### **Strict Formatting Rules:** ###
+- **Do NOT start with "Here's what I found:" first—always print "We are facing difficulties in retrieving answers from the dataset."**
+- **Do NOT apologize or mention any encountered errors.**
+- **Never return only the error message without question-based information.**
+- **Do NOT create separate HTML structures—everything must be returned inside a single `<div>` tag**
+- **Ensure the result contains meaningful question-related insights without mentioning missing data or filters.**
+- **You are NOT allowed to generate your own result if the response is empty, has errors, or contains null values. Follow the instructions exactly.**

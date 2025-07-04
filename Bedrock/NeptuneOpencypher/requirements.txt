@@ -1,0 +1,4 @@
+requests==2.32.2
+boto3==1.29.5
+botocore
+tiktoken

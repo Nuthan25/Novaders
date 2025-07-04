@@ -1,0 +1,2 @@
+$$QUERY_RESULT$$
+Based on this dictionary, mention the type of graph such as Bar Graph, Scatter Plot or Network Graph that can be created. provide only the graph name and nothing else

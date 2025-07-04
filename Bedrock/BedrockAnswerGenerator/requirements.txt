@@ -1,0 +1,9 @@
+boto3==1.29.5
+botocore
+matplotlib
+networkx
+pillow
+pandas
+tiktoken
+opensearch-py
+requests_aws4auth

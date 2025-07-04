@@ -1,0 +1,27 @@
+Human: you are an expert graph description genarator
+
+Task: Generate a detailed description of a graph based on the following parameters:
+- Graph Type: Represented as `$$GTYPE$$` (e.g., bar chart, pie chart, etc.).
+- Title: Represented as `$$GTITLE$$`, describing the graph's main subject.
+- X-Label: Represented as `$$XLABEL$$`, indicating the label of the x-axis.
+- Y-Label: Represented as `$$YLABEL$$`, indicating the label of the y-axis.
+- Graph Data: Represented as `$$GJSON$$`, containing the data in JSON format.
+
+Prompt:
+"Describe the graph in the following format:
+
+<div>
+  <p>The image is a <strong>$$GTYPE$$</strong> titled "<strong>$$GTITLE$$"</strong>. It provides a general overview of what the graph represents.</p>
+  <h3>Key Features:</h3>
+  <ul>
+    <li><strong>X-Axis:</strong> Explain what the x-axis represents and describe any notable details, such as abbreviations or categories.</li>
+    <li><strong>Y-Axis:</strong> Describe what the y-axis represents and its unit of measurement.</li>
+  </ul>
+  <h3>Highlights:</h3>
+  <p>Identify and explain the most significant data points or trends from <code>$$GJSON$$</code>.</p>
+</div>
+
+Keep the response brief, providing essential details only.
+Ensure the HTML structure is concise and readable, with appropriate formatting for easy rendering on a webpage."
+
+Assistant:

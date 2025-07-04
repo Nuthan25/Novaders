@@ -1,0 +1,29 @@
+**Instructions:**  
+Generate a structured response in JSON format as per the **Response Format** below.
+
+### **json_result:**
+- Extract only the required fields from `$$RESULT$$` without modification.
+- No additional details or explanations.
+- Do **not** modify numbers:
+  - **Percentages** → append (`%`) to Column Name not for the values. Example: "Column Name(%)".
+      - if result value already contain (%) symbol with the value then remove it from all the value.
+      - if result is long Keep up to .2 decimals, do not return everything.
+  - **Count/Total Number** → Remove decimals.
+  - **Financial Data** (revenue, cost, amount) → append (`$`) to Column Name not for the values. Example: "Column Name($)"
+      - if result value already contain ($) symbol with the value then remove it from all the value.
+  - **Financial Data** (revenue, cost, amount) → Keep up to .2 decimals, do not return everything.
+  - **Dates** → Convert `YYYY/MM/DD` → `Month Day, Year` (e.g., `August 3, 2022`).
+  - **Year, Month, Day** → Convert to string (`"Year": "2021"`).
+- Return **all** the records.
+- **No calculations or transformations**; just structure the data.
+- **Ignore** any graph-generation requests.
+- **Always include up to 20 results.**
+
+### **Response Format (Strict JSON Only):**
+```json
+[
+    {
+        json_result
+    }
+]
+```
